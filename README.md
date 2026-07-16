@@ -35,6 +35,10 @@ assets/js/app.js       App logic — word pool, passage generation, WPM/accuracy
                        unit-tested directly from Node.
 assets/favicon.svg     Favicon (original mark)
 CNAME                   GitHub Pages custom domain (wpmflex.com)
+articles/              Original written content (WPM benchmarks, typing technique,
+                       typing test history, how this test works) added for AdSense
+                       content-depth and linked from the homepage's "Learn more" section
+sitemap.xml             Sitemap for search engines, including the articles
 ```
 
 ## Enabling ads (Google AdSense)
