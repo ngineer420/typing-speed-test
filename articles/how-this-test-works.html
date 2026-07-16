@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How This Typing Test Works (and Why We Built It) — wpmflex.com</title>
+<meta name="description" content="A look under the hood of wpmflex.com: how WPM, raw WPM, and accuracy are actually calculated, how the randomized word pool and passage extension work, and the design decisions behind the test.">
+<link rel="canonical" href="https://wpmflex.com/articles/how-this-test-works.html">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="wpmflex.com home">
+      <span class="brand-mark"><span class="bracket">[</span>wpm<span class="bracket">/</span>flex<span class="bracket">]</span></span>
+      <span class="brand-tag">typing speed test</span>
+    </a>
+  </div>
+</header>
+<main class="container-narrow">
+  <h1>How This Typing Test Works (and Why We Built It)</h1>
+
+  <p>A typing test looks simple from the outside: some text appears, you type it, a number comes out. Underneath, there are real decisions about what counts as a &ldquo;word,&rdquo; when the clock starts, and how mistakes should affect your score — decisions that determine whether the number you see is a meaningful measurement or just an arbitrary readout. This page walks through exactly how <a href="/">our test</a> calculates your results and why it's built the way it is.</p>
+
+  <h2>The core formulas</h2>
+  <p>Words per minute is conventionally defined using a fixed unit: five characters equal one &ldquo;word,&rdquo; regardless of what you actually typed. This test's final WPM is calculated as:</p>
+  <p><strong>WPM = (correct characters ÷ 5) ÷ minutes elapsed</strong></p>
+  <p>Only characters you typed correctly count toward this number — that's the deliberate choice that makes it a measure of usable output rather than raw finger speed. Separately, the test also tracks <strong>raw WPM</strong>, which uses the same formula but counts every character you typed, correct or not:</p>
+  <p><strong>Raw WPM = (total typed characters ÷ 5) ÷ minutes elapsed</strong></p>
+  <p>The gap between your raw and final WPM is a direct readout of how much your errors are costing you. If the two numbers are close, your accuracy is high and few characters are being discarded. If raw WPM is noticeably higher than final WPM, you're typing quickly but sloppily, and slowing down slightly would likely raise your final number rather than lower it — a phenomenon we cover in more detail in <a href="/articles/how-to-type-faster.html">how to type faster</a>.</p>
+  <p>Accuracy itself is calculated as a straightforward percentage: <strong>accuracy = (correct characters ÷ total typed characters) × 100</strong>, capped at 100% and returning 0 rather than an error if you haven't typed anything yet. All three numbers — WPM, raw WPM, and accuracy — are computed from the same underlying counts of correct, incorrect, and total characters typed, so they always tell a mutually consistent story about a single run.</p>
+
+  <h2>Where the passage text comes from</h2>
+  <p>The text you type is generated on the fly from a pool of roughly 220 common short English words — everyday words like &ldquo;the,&rdquo; &ldquo;time,&rdquo; &ldquo;water,&rdquo; and &ldquo;system&rdquo; rather than obscure vocabulary, chosen so the test measures typing mechanics rather than reading comprehension or vocabulary recognition. Words are picked at random from that pool, with one rule: the same word is never allowed to repeat back-to-back, so you don't get an unrepresentative run of &ldquo;the the the&rdquo; that would be trivially easy to blast through.</p>
+  <p>Rather than generating one long fixed passage up front, the test builds an initial passage sized generously for your chosen duration — enough words that a fast typist won't run out — and then extends it on the fly as you approach the end of what's currently rendered. Whenever the remaining unseen text drops below a small buffer, more randomly chosen words get appended in the background, so the passage effectively never ends no matter how fast you type or how long the test runs. You should never actually notice this happening; it's designed to be invisible.</p>
+
+  <h2>Why the timer starts on your first keystroke, not on page load</h2>
+  <p>The clock for a timed run doesn't start when the page loads or when you click into the typing box — it starts on your very first keystroke. This matters because the alternative genuinely inflates scores: if the timer started earlier, every second you spent reading the passage, getting comfortable, or simply reacting to the page appearing would be silently counted against your typing time, understating your real speed. Starting on the first keystroke means the full duration you selected is spent purely typing, which is the fairer and more comparable measurement.</p>
+  <p>Time itself is tracked continuously and the on-screen countdown and live WPM/accuracy readouts update several times per second, but that display refresh rate is purely cosmetic — your keystrokes are what get counted and timestamped, independent of how often the numbers on screen redraw. When the selected duration elapses, the test locks in your final counts at that moment.</p>
+
+  <h2>Why backspace only works within the current word</h2>
+  <p>You can correct mistakes with backspace, but only back to the start of the word you're currently on — you can't backspace into a previous, already-completed word. This is a deliberate constraint rather than a limitation of the code. Unlimited backspacing across word boundaries would let a typist continuously re-edit earlier text throughout the entire test, which turns a typing-speed measurement into something closer to a proofreading-and-editing exercise, and makes it much harder to compare one run to another since the &ldquo;editing budget&rdquo; each run allows becomes unpredictable. Constraining correction to the current word keeps the test measuring forward typing speed and in-the-moment accuracy, which is what words per minute is supposed to represent.</p>
+
+  <h2>Tracking your results honestly</h2>
+  <p>At the end of a run, the test records your final WPM, raw WPM, accuracy, and a breakdown of correct, incorrect, and characters you never reached (&ldquo;missed&rdquo;) before time ran out. Your best score is tracked <em>separately for each duration</em> rather than as one global personal best, because a 15-second burst and a 120-second sustained run measure meaningfully different things, as explained in <a href="/articles/what-is-a-good-wpm.html">what's a good WPM score</a> — comparing them as if they were the same metric would be misleading. Your last ten results are also saved so you can see a trend over time, not just a single score in isolation.</p>
+  <p>All of this — your history, your per-duration bests — is stored only in your browser's local storage on your own device. Nothing about your typing, your results, or your history is ever sent to a server. There's no account system, because the test doesn't need to know who you are to tell you how fast you type.</p>
+
+  <h2>Why we built it this way</h2>
+  <p>We wanted a typing test with three properties. <strong>Honest measurement</strong> — formulas that follow the long-established words-per-minute convention rather than an invented scoring scheme, so your number here means the same thing it would mean anywhere else. <strong>Instant and free</strong> — no sign-up, no install, nothing between you and the passage. And <strong>private by default</strong> — everything runs locally in your browser, and your results live only on your device.</p>
+  <p>If you're curious where the words-per-minute convention this test follows actually came from, our <a href="/articles/history-of-typing-tests.html">history of typing tests</a> traces it back to 19th-century stenography contests. Otherwise, the passage is waiting: <a href="/">take the test</a> and see your number.</p>
+
+  <h2>Keep reading</h2>
+  <ul>
+    <li><a href="/articles/what-is-a-good-wpm.html">What's a good WPM score? Realistic benchmarks</a></li>
+    <li><a href="/articles/how-to-type-faster.html">How to type faster: a real technique guide</a></li>
+    <li><a href="/articles/history-of-typing-tests.html">The history of typing tests: from QWERTY to online leaderboards</a></li>
+    <li><a href="/">Take the typing speed test</a></li>
+  </ul>
+</main>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> wpmflex.com</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
