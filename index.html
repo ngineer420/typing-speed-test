@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WPM Flex — Free Typing Speed Test</title>
+<meta name="description" content="A free, no-signup typing speed test. Measure your words per minute (WPM) and accuracy over 15, 30, 60, or 120 seconds, track your best scores, and see how you compare.">
+<link rel="canonical" href="https://wpmflex.com/">
+<meta name="theme-color" content="#14161a">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="WPM Flex — Free Typing Speed Test">
+<meta property="og:description" content="Measure your typing speed (WPM) and accuracy, free and instant. No sign-up, runs entirely in your browser.">
+<meta property="og:url" content="https://wpmflex.com/">
+<meta property="og:image" content="https://wpmflex.com/assets/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="WPM Flex — Free Typing Speed Test">
+<meta name="twitter:description" content="Measure your typing speed (WPM) and accuracy, free and instant. No sign-up, runs entirely in your browser.">
+<meta name="twitter:image" content="https://wpmflex.com/assets/og-image.png">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "WPM Flex",
+  "url": "https://wpmflex.com/",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Free browser-based typing speed test measuring words per minute (WPM), raw WPM, and accuracy."
+}
+</script>
+
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="wpmflex.com home">
+      <span class="brand-mark"><span class="bracket">[</span>wpm<span class="bracket">/</span>flex<span class="bracket">]</span></span>
+      <span class="brand-tag">typing speed test</span>
+    </a>
+    <div class="header-actions">
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">◐</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="hero">
+    <h1>Test Your Typing Speed</h1>
+    <p>Click the box below and start typing. Your timer starts on the first keystroke.</p>
+  </div>
+
+  <div class="duration-row">
+    <div id="duration-group" class="segmented" role="group" aria-label="Test duration">
+      <button type="button" data-duration="15" aria-pressed="false">15s</button>
+      <button type="button" data-duration="30" aria-pressed="true">30s</button>
+      <button type="button" data-duration="60" aria-pressed="false">60s</button>
+      <button type="button" data-duration="120" aria-pressed="false">120s</button>
+    </div>
+  </div>
+
+  <section id="test-screen">
+    <div class="stats-row">
+      <div class="stat"><span class="stat-value" id="stat-time">30</span><span class="stat-label">Seconds</span></div>
+      <div class="stat"><span class="stat-value" id="stat-wpm">0</span><span class="stat-label">WPM</span></div>
+      <div class="stat"><span class="stat-value" id="stat-acc">0%</span><span class="stat-label">Accuracy</span></div>
+    </div>
+
+    <div class="type-wrap">
+      <input id="type-input" class="type-input-hidden" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-hidden="true" tabindex="-1">
+      <div class="type-surface" id="type-surface" role="textbox" aria-label="Typing test text. Click here and start typing.">
+        <div class="passage" id="passage"></div>
+      </div>
+    </div>
+    <p class="type-hint">Backspace corrects within the current word · Tab restarts</p>
+
+    <div class="controls-row">
+      <button type="button" id="restart-btn" class="primary">Restart (Tab)</button>
+    </div>
+  </section>
+
+  <section id="results-screen" hidden>
+    <div class="results-panel">
+      <div class="results-headline">
+        <div class="stat"><span class="stat-value" id="res-wpm">0</span><span class="stat-label">WPM</span></div>
+        <div class="stat"><span class="stat-value" id="res-acc">0%</span><span class="stat-label">Accuracy</span></div>
+      </div>
+      <div class="rating-badge" id="res-rating">Average</div>
+      <p class="rating-message"></p>
+
+      <div class="results-grid">
+        <div class="cell"><span class="k">Raw WPM</span><span class="v" id="res-raw">0</span></div>
+        <div class="cell"><span class="k">Duration</span><span class="v" id="res-duration">30s</span></div>
+        <div class="cell correct"><span class="k">Correct</span><span class="v" id="res-correct">0</span></div>
+        <div class="cell incorrect"><span class="k">Incorrect</span><span class="v" id="res-incorrect">0</span></div>
+        <div class="cell"><span class="k">Missed</span><span class="v" id="res-missed">0</span></div>
+        <div class="cell"><span class="k">Best (this duration)</span><span class="v" id="res-best">0</span></div>
+      </div>
+
+      <p class="best-line">Average typists land around <strong>40 WPM</strong> · above-average is ~65-70 · 90+ is fast · 120+ is exceptional.</p>
+
+      <div class="controls-row">
+        <button type="button" id="try-again-btn" class="primary">Try again</button>
+      </div>
+
+      <div class="history-section">
+        <h3>Recent results <svg id="sparkline" hidden></svg></h3>
+        <ul class="history-list" id="history-list"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-narrow about-section">
+    <h2>About this typing test</h2>
+    <p>WPM Flex is a free, no-signup typing speed test. Pick a duration — 15, 30, 60, or 120 seconds — and start typing the moment you're ready; the timer only starts on your first keystroke, so there's no rushed countdown. As you type, each character is marked correct or incorrect in place, and a blinking caret shows exactly where you are.</p>
+    <p>When time runs out you'll get your final WPM (based on correct characters only), your raw WPM (every character you typed, right or wrong), your accuracy percentage, and a breakdown of correct, incorrect, and missed characters. Your best score per duration and your last 10 results are saved locally in your browser — nothing is ever uploaded.</p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> wpmflex.com</div>
+    <div class="footer-links">
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/js/app.js"></script>
+</body>
+</html>
