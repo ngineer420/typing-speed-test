@@ -128,6 +128,16 @@
     return { tier: tier.tier, label: tier.label, message: tier.message };
   }
 
+  // Arcade letter grade S/A/B/C/D from final WPM, aligned to the rating tiers
+  // above (presentation only — never feeds the WPM/accuracy math).
+  function getGrade(wpm) {
+    if (wpm >= 120) return "S";
+    if (wpm >= 90) return "A";
+    if (wpm >= 65) return "B";
+    if (wpm >= 40) return "C";
+    return "D";
+  }
+
   /* ============================= DOM app ============================= */
   if (typeof document !== "undefined") {
     const DURATIONS = [15, 30, 60, 120];
@@ -206,6 +216,13 @@
       historyList: document.getElementById("history-list"),
       sparkline: document.getElementById("sparkline"),
       tryAgainBtn: document.getElementById("try-again-btn"),
+      /* arcade HUD flavour (never touches the WPM/accuracy math) */
+      comboVal: document.getElementById("combo-val"),
+      hudCombo: document.getElementById("hud-combo"),
+      deckMode: document.getElementById("deck-mode"),
+      rushBest: document.getElementById("rush-best"),
+      resultGrade: document.getElementById("result-grade"),
+      announce: document.getElementById("announce"),
     };
 
     /* ---------- state ---------- */
@@ -216,6 +233,7 @@
     let startTime = null;
     let tickHandle = null;
     let finished = false;
+    let combo = 0; // consecutive correctly-typed characters (arcade flavour)
 
     function initialWordCountFor(dur) {
       // Rough overshoot so an average-fast typist never runs out before extension kicks in.
@@ -228,9 +246,44 @@
       pos = 0;
       startTime = null;
       finished = false;
+      setCombo(0);
       renderPassage();
       updateStatsDisplay(0, 0, duration);
+      updateHud();
       stopTimer();
+    }
+
+    /* ---------- arcade HUD flavour (combo / grade / announce) ---------- */
+    function setCombo(n) {
+      combo = n;
+      if (els.comboVal) els.comboVal.textContent = n;
+      if (els.hudCombo) els.hudCombo.classList.toggle("hot", n >= 10);
+    }
+    function bumpComboAnim(cls) {
+      const el = els.hudCombo;
+      if (!el) return;
+      el.classList.remove("pop", "brk");
+      void el.offsetWidth; // restart the animation
+      el.classList.add(cls);
+    }
+    function updateHud() {
+      if (els.deckMode) els.deckMode.textContent = duration + " Sec";
+      if (els.rushBest) {
+        const best = getBests()[duration];
+        els.rushBest.textContent = best ? best + " WPM" : "—";
+      }
+    }
+    function showAnnounce(text) {
+      const a = els.announce;
+      if (!a) return;
+      a.textContent = "";
+      const span = document.createElement("span");
+      span.className = "announce-text";
+      span.textContent = text;
+      a.appendChild(span);
+      a.classList.add("show");
+      clearTimeout(showAnnounce._t);
+      showAnnounce._t = setTimeout(() => a.classList.remove("show"), 1100);
     }
 
     function renderPassage() {
@@ -282,7 +335,15 @@
         startTime = Date.now();
         startTimer();
       }
-      charStates[pos] = key === text[pos] ? "correct" : "incorrect";
+      const isCorrect = key === text[pos];
+      charStates[pos] = isCorrect ? "correct" : "incorrect";
+      if (isCorrect) {
+        setCombo(combo + 1);
+        bumpComboAnim("pop");
+      } else {
+        if (combo > 0) bumpComboAnim("brk");
+        setCombo(0);
+      }
       pos++;
       maybeExtend();
       paintChars();
@@ -363,6 +424,15 @@
       const best = saveBest(duration, wpm);
       els.resBest.textContent = best;
 
+      const grade = getGrade(wpm);
+      if (els.resultGrade) {
+        els.resultGrade.textContent = grade;
+        els.resultGrade.setAttribute("data-grade", grade);
+        els.resultGrade.classList.add("show");
+      }
+      showAnnounce("Time Up!");
+      updateHud();
+
       const history = pushHistory({ wpm, accuracy: acc, duration, timestamp: Date.now() });
       renderHistory(history);
 
@@ -422,6 +492,8 @@
     }
 
     function restart() {
+      if (els.announce) els.announce.classList.remove("show");
+      if (els.resultGrade) els.resultGrade.classList.remove("show");
       els.resultsScreen.hidden = true;
       els.testScreen.hidden = false;
       newPassage();
@@ -514,6 +586,7 @@
       computeRawWPM,
       computeAccuracy,
       getRatingTier,
+      getGrade,
     };
   }
 })();
