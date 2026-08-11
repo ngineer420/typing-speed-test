@@ -217,6 +217,8 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 24px 20px 60px; }
 .char { position: relative; white-space: pre-wrap; }
 .char.correct { color: var(--text); }
 .char.incorrect { color: var(--incorrect); background: var(--incorrect-bg); border-radius: 2px; }
+/* strict mode (/accuracy-drill/): the character the typist is stuck on */
+.char.blocked { color: var(--bg); background: var(--incorrect); border-radius: 2px; }
 .char.current::before {
   content: "";
   position: absolute;
@@ -323,6 +325,39 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 24px 20px 60px; }
 .faq-item { margin-bottom: 18px; }
 .faq-item h3 { font-size: 15px; margin: 0 0 6px; }
 .faq-item p { margin: 0; color: var(--text-dim); }
+
+/* ---------- custom passage panel (/custom-text/ only) ---------- */
+.custom-label {
+  display: block;
+  margin-top: 18px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-faint);
+}
+.custom-panel textarea {
+  display: block;
+  width: 100%;
+  min-height: 120px;
+  margin-top: 8px;
+  padding: 12px 14px;
+  background: var(--bg-inset);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.55;
+  resize: vertical;
+}
+.custom-panel textarea:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.custom-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; }
+.custom-count { font-size: 12px; color: var(--text-faint); font-variant-numeric: tabular-nums; margin-left: auto; }
+/* two classes deep on purpose: `.container-narrow p` would otherwise outrank it */
+.custom-panel .custom-status { min-height: 1.5em; margin: 12px 0 0; font-size: 13px; color: var(--accent); }
 
 /* ---------- footer ---------- */
 .site-footer {
@@ -489,6 +524,8 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 24px 20px 60px; }
 .crt .passage { color: #5f8a99; }
 .crt .char.correct { color: #eafcff; }
 .crt .char.incorrect { color: #ff6b7a; background: rgba(255, 91, 107, .18); border-radius: 0; }
+/* strict mode: a solid block on the character that refuses to advance */
+.crt .char.blocked { color: #120306; background: #ff6b7a; border-radius: 0; }
 .crt .char.current::before { background: #21e6ff; width: 2px; box-shadow: 0 0 0 0 #21e6ff; }
 .crt .type-hint { color: #6f97a6; font-size: 11px; }
 
@@ -648,4 +685,5 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 24px 20px 60px; }
   .hud-combo.pop, .hud-combo.brk, .grade-stamp.show, .announce-text { animation: none; }
   .char.current::before { animation: none; }
   .start-btn, .deck .segmented button, .crt #results-screen #try-again-btn { transition: none; }
+  .custom-panel button { transition: none; }
 }
