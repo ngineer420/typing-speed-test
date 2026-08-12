@@ -717,7 +717,10 @@
     /* ---------- input handling ---------- */
     els.typeInput.addEventListener("keydown", (e) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
-      if (e.key === "Tab") {
+      // Plain Tab restarts the run. Shift+Tab is deliberately left alone: the
+      // page focuses this input on arrival, so without an unclaimed key there
+      // is no way off the test and out to the nav with a keyboard.
+      if (e.key === "Tab" && !e.shiftKey) {
         e.preventDefault();
         restart();
         return;
@@ -741,12 +744,19 @@
     els.typeSurface.addEventListener("click", focusInput);
     els.restartBtn.addEventListener("click", () => restart());
     els.tryAgainBtn.addEventListener("click", () => restart());
+    /* "Tab restarts" is a real convenience, but it was bound to every Tab press
+       anywhere on the page, so Tab could never move focus off the test — the
+       theme toggle, the toolbar and the footer were all unreachable without a
+       mouse. Restart only when nothing in particular has focus; once the
+       visitor is on a real control, Tab has to keep walking. */
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Tab" && document.activeElement !== els.typeInput) {
-        e.preventDefault();
-        restart();
-        focusInput();
-      }
+      if (e.key !== "Tab") return;
+      const el = document.activeElement;
+      if (el === els.typeInput) return; // its own handler already restarted
+      if (el && el !== document.body && el !== document.documentElement) return;
+      e.preventDefault();
+      restart();
+      focusInput();
     });
 
     /* ---------- custom passage panel (/custom-text/ only) ---------- */
