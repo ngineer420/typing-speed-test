@@ -24,6 +24,11 @@ driving the SAME engine in `app.js`. See "Tool pages" below.
 - `assets/css/styles.css` — the whole design system in one file. The
   page-chrome design system up top, then the **"TYPE RUSH pixel-art cabinet"**
   block at the very bottom.
+- `assets/js/nav.js` — the portfolio toolbar's behaviour, loaded on **every**
+  page. Separate from `app.js` because only the six test pages load that one,
+  and the articles and legal pages need the chrome to work too. Pure
+  enhancement: with JS off the `<details>` still discloses, the rail is still a
+  native scroll container of real links, the fades and scrim are still CSS.
 - `assets/fonts/pressstart2p.woff2` — self-hosted pixel font (see below).
 - `privacy.html` / `terms.html` / `404.html` — required for ad networks / Pages;
   keep working.
@@ -170,6 +175,25 @@ an arcade screen is lit and dark regardless of the surrounding light/dark page.
 - **Light + dark themes both work** (page chrome switches; the CRT stays dark).
 - The `erabb.it` 🐇 mark is the portfolio signature — **last in `<body>`**,
   flush to the corner, `cursor:default`.
+
+## Navigation — never hand-edit it
+
+The header toolbar (rail + sheet) is the portfolio pattern from
+`ngineer420/ngineer420.github.io#13`. It is **generated**, not written:
+
+- `tools/nav_data.py` — the only file to edit. Destinations, labels, groups.
+- `tools/sync_nav.py` — generic, byte-identical across the portfolio. Do not
+  edit it; if it needs a change, the change belongs on every site.
+- `python3 tools/sync_nav.py` rewrites the `<!-- nav:start -->` … `<!-- nav:end -->`
+  region in all 18 HTML files. `--check` exits nonzero if any file is stale;
+  run it before shipping, because one hand-edited page is how these repos drift.
+
+`aria-current="page"` is derived from each file's own path, so both members of
+every flat-file/directory twin pair are stamped from the one list.
+
+The in-deck 15s/30s/60s/120s controls are **not** navigation: they are a
+parameter of whichever test is running, and 15/30/120 have no page of their own.
+The rail is the variant switcher. Do not turn the deck buttons into links.
 
 ## Cache-bust convention (critical)
 
