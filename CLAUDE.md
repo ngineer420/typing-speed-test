@@ -201,7 +201,7 @@ Coupled HTML+CSS/JS changes: cached visitors otherwise get new HTML with stale
 CSS = a broken raw page (this class of bug has hit sibling sites). So
 `styles.css?v=N` / `app.js?v=N` on **every** page — index, 404, privacy, terms,
 `articles/*`, and **both copies** of all five tool pages (18 HTML files today).
-**Bump the `?v=` on any coupled change.** Currently `?v=3`.
+**Bump the `?v=` on any coupled change.** Currently `?v=5`.
 
 ## Shipping
 

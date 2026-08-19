@@ -409,18 +409,26 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 24px 20px 60px; }
   border-radius: 10px;
   padding: 22px 26px;
   cursor: text;
-  max-height: 4.8em;
   overflow: hidden;
   position: relative;
 }
 .type-surface:focus-within { border-color: var(--accent-dim); }
+/* The window is a whole number of LINE BOXES, never a fraction of one: the
+   height lives on .passage (where 1em is the passage's own 21px, not the
+   surface's inherited 16px) so the last visible line is never sliced. app.js
+   scrolls this box in whole --passage-lh steps to match. Fixed height, so the
+   panel never resizes as the feed advances. */
 .passage {
+  --passage-lines: 3;
+  --passage-lh: 1.6em;
   font-family: var(--mono);
   font-size: 21px;
-  line-height: 1.6em;
+  line-height: var(--passage-lh);
   letter-spacing: .01em;
   color: var(--text-faint);
   word-break: break-word;
+  height: calc(var(--passage-lines) * var(--passage-lh));
+  overflow: hidden;
 }
 .char { position: relative; white-space: pre-wrap; }
 .char.correct { color: var(--text); }
