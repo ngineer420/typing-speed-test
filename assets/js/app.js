@@ -452,7 +452,22 @@
         if (i === strictWrongAt) span.classList.add("blocked");
       }
       const currentSpan = spans[pos];
-      if (currentSpan) currentSpan.scrollIntoView({ block: "center", inline: "nearest" });
+      if (currentSpan) scrollToLine(currentSpan);
+    }
+
+    /* Move the passage window in WHOLE line boxes. scrollIntoView({block:"center"})
+       centres on the character, which leaves a sliced half-line at the top and
+       bottom edge of the window; a typing test wants complete lines only. The
+       window is three lines tall (see .passage in styles.css), so the current
+       line sits one in from the top with a line of read-ahead below it. */
+    function scrollToLine(span) {
+      const box = els.passage;
+      const lineH = parseFloat(getComputedStyle(box).lineHeight);
+      if (!lineH) return;
+      const top = span.getBoundingClientRect().top -
+                  box.getBoundingClientRect().top + box.scrollTop;
+      const line = Math.round(top / lineH);
+      box.scrollTop = Math.max(0, line - 1) * lineH;
     }
 
     function maybeExtend() {
