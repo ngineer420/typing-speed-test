@@ -15,8 +15,8 @@ they are not pages and are deliberately not links.
 Home is the brand, per the spec, so index.html takes no rail or sheet slot.
 """
 
-# Noun used in the menu trigger: "All 9 pages". Not "tools" — five of the nine
-# are one tool wearing different clothes and four are articles.
+# Noun used in the menu trigger: "All 10 pages". Not "tools" — five of the ten
+# are one tool wearing different clothes and five are guides.
 NOUN = "pages"
 
 # Tier-1 destinations, in traffic order. The rail takes the first 8 (spec cap);
@@ -37,9 +37,10 @@ TOOLS = [
     {"href": "/articles/how-to-type-faster.html",     "label": "Type Faster", "long": "How to Type Faster",       "group": "guides", "tier": 1},
     {"href": "/articles/history-of-typing-tests.html", "label": "History",    "long": "History of Typing Tests",  "group": "guides", "tier": 1},
     {"href": "/articles/how-this-test-works.html",    "label": "How It Works", "long": "How This Test Works",     "group": "guides", "tier": 1},
+    {"href": "/typing-weak-keys/",                    "label": "Weak Keys",   "long": "Find Your Weak Keys",     "group": "guides", "tier": 1},
 ]
 
-# Sheet groups, in order. Nine destinations is past the flat-list threshold, so
+# Sheet groups, in order. Ten destinations is past the flat-list threshold, so
 # these are rendered. Names come from the visitor's vocabulary, not the repo's.
 GROUPS = [
     ("tests",  "Typing tests"),
@@ -50,8 +51,8 @@ GROUPS = [
 HUBS = []
 
 # No footer tool list here today, and the spec says not to add one where none
-# exists — the rail carries every tier-1 destination visibly and the sheet
-# carries all nine, so a footer duplicate would be pure boilerplate.
+# exists — the rail carries the first eight tier-1 destinations visibly and the
+# sheet carries all ten, so a footer duplicate would be pure boilerplate.
 FOOTER = []
 
 # One-time --migrate: this site has no nav markup at all to strip, so the only

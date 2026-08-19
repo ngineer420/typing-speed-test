@@ -7,6 +7,7 @@ A free, ad-supported typing speed test:
 - Live WPM, accuracy, and time-remaining while you type. Each character is marked correct/incorrect in place with a blinking caret. Backspace corrects within the current word only (you can't backspace past the start of the word you're on).
 - Results screen: final WPM, raw WPM, accuracy, correct/incorrect/missed character counts, and a rating tier (average ~40 WPM, above-average ~65-70, fast 90+, exceptional 120+).
 - Best WPM per duration and your last 10 results are saved in `localStorage` and shown on the results screen.
+- **Per-key heatmap.** Every keystroke is graded against the character the passage asked for and accumulated across runs in `localStorage`, then drawn as an inline-SVG QWERTY board on the results screen: each keycap filled by its error rate and outlined by its mean latency against your own average, with a text-equivalent table, a "5 most-missed" and a "5 slowest" list, and a **Drill these keys** button that hands the weak set to the accuracy drill. A key stays out of the shading and the lists until it has been asked for at least a dozen times, so one fumbled `z` never becomes "your worst key". Explained at [/typing-weak-keys/](https://wpmflex.com/typing-weak-keys/); all of it is local to the browser.
 
 Everything runs client-side — no backend, no build step, no uploads. Deployed as static files on GitHub Pages.
 

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Typing Weak Keys: Find the Letters Costing You Accuracy — wpmflex.com</title>
+<meta name="description" content="How the per-key heatmap works: which keys you miss, which ones you are slow on, why a single run is noise, and how to drill the weak keys instead of retyping the same easy words.">
+<link rel="canonical" href="https://wpmflex.com/typing-weak-keys/">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/styles.css?v=6">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="wpmflex.com home">
+      <span class="brand-mark"><span class="bracket">[</span>wpm<span class="bracket">/</span>flex<span class="bracket">]</span></span>
+      <span class="brand-tag">typing speed test</span>
+    </a>
+  </div>
+</header>
+
+<!-- nav:start -->
+<nav class="toolbar" aria-label="Tools">
+  <details class="tb-menu">
+    <summary class="tb-trigger" aria-label="All 10 pages">
+      <span class="tb-glyph" aria-hidden="true">&#9636;</span>
+      <span class="tb-label">All 10<span class="tb-label-long"> pages</span></span>
+    </summary>
+    <div class="tb-sheet">
+      <div class="tb-sheet-cols">
+        <p class="tb-grouplabel" id="tb-g1">Typing tests</p>
+        <ul aria-labelledby="tb-g1">
+          <li><a href="/1-minute-typing-test/">1 Minute Typing Test</a></li>
+          <li><a href="/5-minute-typing-test/">5 Minute Typing Test</a></li>
+          <li><a href="/code-typing-test/">Code Typing Test</a></li>
+          <li><a href="/custom-text/">Custom Text Test</a></li>
+          <li><a href="/accuracy-drill/">Accuracy Drill</a></li>
+        </ul>
+        <p class="tb-grouplabel" id="tb-g2">Guides</p>
+        <ul aria-labelledby="tb-g2">
+          <li><a href="/articles/what-is-a-good-wpm.html">What's a Good WPM Score?</a></li>
+          <li><a href="/articles/how-to-type-faster.html">How to Type Faster</a></li>
+          <li><a href="/articles/history-of-typing-tests.html">History of Typing Tests</a></li>
+          <li><a href="/articles/how-this-test-works.html">How This Test Works</a></li>
+          <li><a href="/typing-weak-keys/" aria-current="page">Find Your Weak Keys</a></li>
+        </ul>
+      </div>
+    </div>
+  </details>
+  <div class="tb-scrim"></div>
+  <ul class="tb-rail">
+    <li><a href="/1-minute-typing-test/">1 Min</a></li>
+    <li><a href="/5-minute-typing-test/">5 Min</a></li>
+    <li><a href="/code-typing-test/">Code</a></li>
+    <li><a href="/custom-text/">Custom</a></li>
+    <li><a href="/accuracy-drill/">Accuracy</a></li>
+    <li><a href="/articles/what-is-a-good-wpm.html">Good WPM</a></li>
+    <li><a href="/articles/how-to-type-faster.html">Type Faster</a></li>
+    <li><a href="/articles/history-of-typing-tests.html">History</a></li>
+  </ul>
+</nav>
+<!-- nav:end -->
+<main id="main" class="container-narrow">
+  <h1>Typing Weak Keys: Finding the Letters That Cost You Accuracy</h1>
+
+  <p>A typing test that tells you &ldquo;62 WPM, 94% accuracy&rdquo; has told you almost nothing you can act on. The 6% is the interesting part, and it is never spread evenly across the keyboard — it is concentrated on a handful of keys your hands have never quite learned. This page explains how <a href="/">the test</a> finds those keys, what the heatmap on your results screen is actually measuring, and how to practise the keys it flags instead of retyping the words you already type perfectly.</p>
+
+  <h2>What the heatmap measures</h2>
+  <p>Every character in a run is already graded in place — that is how the accuracy percentage gets calculated. The heatmap simply stops throwing that grading away. For each keystroke, three things are recorded: which key the passage was asking for, whether you produced it, and how long it had been since your previous keystroke. Those three numbers, accumulated, are the entire report.</p>
+  <p>Each keycap is then drawn twice over:</p>
+  <ul>
+    <li><strong>The fill is your error rate on that key</strong> — how often you type something else when that key is what was asked for. A key you never miss stays the same dim slate as the rest of the board; the more often it goes wrong, the further the fill runs toward red.</li>
+    <li><strong>The outline is your mean latency on that key, measured against your own average</strong> — not against anyone else's. Absolute milliseconds are meaningless across typists: 180 ms is dawdling for a 110 WPM typist and brisk for a beginner. A key that is slower than <em>your</em> average gets a brighter, thicker cyan outline, and the same figures appear in milliseconds in the table beside the board.</li>
+  </ul>
+  <p>The colours are never the only channel. The table lists every tracked key with its attempt count, error rate and mean time, so the report survives being read without colour, or read aloud.</p>
+
+  <h2>Why errors are charged to the key you missed, not the key you hit</h2>
+  <p>When you mean to type <code>e</code> and hit <code>r</code>, there are two keys involved and only one of them is at fault in any useful sense. The error is recorded against <code>e</code> — the key you failed to produce — because the question the report exists to answer is &ldquo;which keys let me down&rdquo;. Charging the error to <code>r</code> instead would smear every mistake across whichever neighbours your fingers happened to land on, and the board would slowly turn a uniform pink that tells you nothing.</p>
+
+  <h2>Why one run is not enough, and what the sample gate is for</h2>
+  <p>A 30-second run at 60 WPM is roughly 150 keystrokes. Spread across 26 letters — and unevenly, because English is unevenly distributed — that is a dozen or so <code>e</code>s, a handful of <code>k</code>s, and quite possibly no <code>z</code> at all. Draw a heatmap from a single run and one fumbled keystroke on a rare letter becomes &ldquo;your worst key is Z, at 100% error&rdquo;, which is not a finding, it is a coin flip.</p>
+  <p>So the numbers accumulate across every run you take, and a key is only shaded, ranked or named once it has been asked for at least a dozen times. Below that it is drawn dark and left out of both lists — tracked, but not yet talked about. The note above the board tells you how many keys have cleared the gate so far; on a fresh browser it fills in over the first few runs.</p>
+  <p>Long pauses are discarded from the timing, too. If you stop to read the line, take a call, or look away, the gap before your next keystroke is not a measure of how fast that key is under your finger — anything over three seconds is counted as an attempt but not as a latency.</p>
+
+  <h2>What to do about a weak key</h2>
+  <p>The usual advice — &ldquo;practise more&rdquo; — fails here for a mechanical reason. A typing test built from common English words is built, by definition, from the letters you already type well. The word pool behind the standard test contains no <code>z</code> at all and a single <code>q</code>: the letters a heatmap flags first are precisely the ones an ordinary run will barely show you again. Typing more of the same passage is not practice, it is repetition of what already works.</p>
+  <p>That is what the <strong>Drill these keys</strong> button on the results screen is for. It hands your weak-key set to the <a href="/accuracy-drill/">accuracy drill</a>, which rebuilds its passage from real English weighted several times over toward words containing those letters, drawing on a supplementary word list carrying the rare letters the common pool lacks. The drill's strict mode does the rest: a wrong key is counted and the cursor refuses to move until you produce the right character, so a weak key becomes an immediate stop instead of a percentage point at the end.</p>
+  <p>The set is not frozen. It is recalculated from your live figures each time the drill loads, so as a key stops costing you errors it drops out and the next one moves up. When you want ordinary text again, the drill has a button to turn the weighting off.</p>
+
+  <h2>Reading the two lists</h2>
+  <p><strong>Your 5 most-missed keys</strong> is ranked by error rate, and it is the list to work on first — an error costs you twice, once in accuracy and again in the time it takes to correct it. <strong>Your 5 slowest keys</strong> is ranked by mean latency against your own average, and it is the subtler list: these are usually keys you get right every time but reach for deliberately, with a tiny hesitation before each one. Fixing those is where a plateaued WPM tends to be hiding, because the hesitation is repeated on every occurrence of a common letter rather than concentrated in an occasional visible mistake.</p>
+  <p>If both lists are empty, you have not typed enough yet for anything to be worth saying — take a couple more runs on the <a href="/">standard test</a> and come back.</p>
+
+  <h2>Where the data lives</h2>
+  <p>In your browser, and nowhere else. The per-key totals are kept in this device's local storage alongside your best scores and your recent results. There is no account, no upload, and no server-side record of anything you type here — the analysis runs in the same page you are typing on. Clearing your browser's site data for wpmflex.com clears the heatmap along with everything else.</p>
+
+  <h2>Keep reading</h2>
+  <ul>
+    <li><a href="/accuracy-drill/">Accuracy drill — strict mode, no skipping mistakes</a></li>
+    <li><a href="/articles/how-to-type-faster.html">How to type faster: a real technique guide</a></li>
+    <li><a href="/articles/how-this-test-works.html">How this test works and why we built it</a></li>
+    <li><a href="/">Take the typing speed test</a></li>
+  </ul>
+</main>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>© <span id="year"></span> wpmflex.com</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+  </div>
+</footer>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+<script src="/assets/js/nav.js?v=4"></script>
+<a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
+</body>
+</html>

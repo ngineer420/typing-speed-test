@@ -238,6 +238,210 @@
     return Object.prototype.hasOwnProperty.call(VARIANTS, name) ? VARIANTS[name] : VARIANTS.words;
   }
 
+  /* ============================= rare-letter word pool =============================
+     WORD_POOL is 269 of the most common English words, which is exactly right for
+     measuring speed and exactly wrong for drilling a weak key: it contains no
+     z-word at all and a single q-word, so weighting a drill toward the letters a
+     heatmap flags first would have nothing to weight. This supplementary pool is
+     ordinary English chosen for coverage of the letters that go missing — z, q,
+     x, j, k, v, w and y — so the accuracy drill can lean on a weak key without
+     turning into nonsense syllables. Same shape as WORD_POOL: lowercase, no
+     spaces, so the space-delimited passage engine is unchanged. */
+  const RARE_WORD_POOL = [
+    "zebra","zone","zero","zoom","zigzag","zipper","size","prize","dozen","frozen",
+    "amazing","puzzle","buzz","jazz","fuzzy","lazy","crazy","hazard","wizard",
+    "citizen","horizon","magazine","organize","realize","recognize","analyze",
+    "freeze","breeze","seize","blaze","gaze","maze","quick","queen","quiet","quote",
+    "query","quality","question","require","request","unique","liquid","equal",
+    "square","quarter","acquire","frequent","sequence","quilt","quiver","extra",
+    "exact","exam","excuse","expert","export","mixture","complex","index","oxygen",
+    "taxi","box","fox","six","fix","mix","next","text","exit","axis","jump","join",
+    "judge","joke","journey","junior","project","subject","object","inject","major",
+    "enjoy","jacket","joyful","key","kind","king","knee","knife","knock","know",
+    "kitchen","market","thank","break","awkward","vivid","vacuum","value","various",
+    "velvet","victory","volume","voyage","vowel","weekly","wagon","widow","yield",
+    "yellow","yesterday","yogurt","rhythm","syrup","myth","gypsy","jockey","kayak",
+    "vaquero","quartz","jigsaw","voxel","zenith","juxtapose","exquisite",
+  ];
+
+  /* ============================= per-key statistics (pure) =============================
+     Every character is already graded in place during a run; these helpers are
+     what stops that grading being thrown away at the end of it. A single run is
+     noise — a 30s run at 60 WPM is ~150 keystrokes spread over 26 letters — so
+     the numbers only mean anything once they are accumulated across runs, and a
+     key is only ever named out loud once it has cleared MIN_KEY_SAMPLES. */
+
+  // Below this many attempts a key is tracked but never ranked, shaded or named.
+  // Twelve is roughly two runs' worth of a mid-frequency letter: enough that one
+  // fumbled 'z' cannot become "your worst key is Z".
+  const MIN_KEY_SAMPLES = 12;
+
+  // Gaps longer than this are a pause, not a keystroke latency — a phone call, a
+  // re-read of the line — and would swamp the mean for whichever key happened to
+  // follow. They still count as an attempt; only the timing is discarded.
+  const MAX_KEY_GAP_MS = 3000;
+
+  /* Which key a character belongs to. Case folds and un-shifts: 'E' and '(' are
+     the E and 9 keys under the finger, and a heatmap of physical keys is the
+     only kind a typist can act on. That matters most on /code-typing-test/,
+     where the passage is mostly shifted symbols — without the un-shifting, the
+     one page whose whole point is the symbol row would track almost nothing.
+     Anything the board does not draw (backtick, tab, every non-ASCII character)
+     is ignored rather than silently lumped in somewhere. */
+  const TRACKED_KEYS = "abcdefghijklmnopqrstuvwxyz0123456789-=[]\\;',./";
+  const SHIFTED_KEYS = {
+    "!": "1", "@": "2", "#": "3", $: "4", "%": "5", "^": "6", "&": "7",
+    "*": "8", "(": "9", ")": "0", _: "-", "+": "=", "{": "[", "}": "]",
+    "|": "\\", ":": ";", '"': "'", "<": ",", ">": ".", "?": "/",
+  };
+
+  function keyIdentity(ch) {
+    if (typeof ch !== "string" || ch.length !== 1) return null;
+    if (ch === " ") return "space";
+    const unshifted = SHIFTED_KEYS[ch] || ch.toLowerCase();
+    return TRACKED_KEYS.indexOf(unshifted) === -1 ? null : unshifted;
+  }
+
+  /* Folds one keystroke into a stats object, in place, and returns it.
+
+     `expectedChar` is the character the passage was asking for, NOT the one the
+     typist produced. That is the whole point: "your worst key is Z" has to mean
+     "you fail to produce Z", and attributing an error to whatever wrong key was
+     hit instead would spread every mistake across the keyboard at random. */
+  function recordKeystroke(stats, expectedChar, correct, ms) {
+    const key = keyIdentity(expectedChar);
+    if (!key) return stats;
+    const entry = stats[key] || (stats[key] = { hits: 0, errors: 0, totalMs: 0, timed: 0 });
+    if (correct) entry.hits++;
+    else entry.errors++;
+    if (typeof ms === "number" && isFinite(ms) && ms > 0 && ms <= MAX_KEY_GAP_MS) {
+      entry.totalMs += ms;
+      entry.timed++;
+    }
+    return stats;
+  }
+
+  function mergeKeystrokes(stats, keystrokes) {
+    const out = stats && typeof stats === "object" ? stats : {};
+    (keystrokes || []).forEach((k) => recordKeystroke(out, k.char, k.correct, k.ms));
+    return out;
+  }
+
+  /* Turns the raw store into something rankable. `eligible` is the subset that
+     has cleared the sample gate; `meanMs` is the typist's own average across
+     those keys, which is the only baseline a latency comparison can honestly
+     use — everyone's absolute milliseconds differ. */
+  function summarizeKeyStats(stats, minSamples) {
+    const gate = minSamples === undefined ? MIN_KEY_SAMPLES : minSamples;
+    const rows = [];
+    let totalMs = 0;
+    let timed = 0;
+    Object.keys(stats || {}).forEach((key) => {
+      const e = stats[key] || {};
+      const hits = e.hits || 0;
+      const errors = e.errors || 0;
+      const attempts = hits + errors;
+      if (attempts === 0) return;
+      const row = {
+        key,
+        hits,
+        errors,
+        attempts,
+        errorRate: errors / attempts,
+        meanMs: e.timed ? e.totalMs / e.timed : null,
+        eligible: attempts >= gate,
+      };
+      rows.push(row);
+      if (row.eligible && e.timed) {
+        totalMs += e.totalMs;
+        timed += e.timed;
+      }
+    });
+    rows.sort((a, b) => a.key.localeCompare(b.key));
+    const eligible = rows.filter((r) => r.eligible);
+    return {
+      rows,
+      eligible,
+      meanMs: timed ? totalMs / timed : null,
+      attempts: rows.reduce((n, r) => n + r.attempts, 0),
+      gate,
+    };
+  }
+
+  function slowestKeys(summary, n) {
+    return summary.eligible
+      .filter((r) => r.meanMs !== null)
+      .slice()
+      .sort((a, b) => b.meanMs - a.meanMs || b.attempts - a.attempts)
+      .slice(0, n === undefined ? 5 : n);
+  }
+
+  function mostMissedKeys(summary, n) {
+    return summary.eligible
+      .filter((r) => r.errors > 0)
+      .slice()
+      .sort((a, b) => b.errorRate - a.errorRate || b.errors - a.errors)
+      .slice(0, n === undefined ? 5 : n);
+  }
+
+  /* The set handed to the drill. Accuracy leads — a key you get wrong costs more
+     than a key you are merely slow on — and the slow list fills the remainder,
+     so a typist with no errors left still gets something to work on. */
+  function weakKeys(summary, max) {
+    const cap = max === undefined ? 6 : max;
+    const out = [];
+    const push = (row) => {
+      if (out.length < cap && out.indexOf(row.key) === -1) out.push(row.key);
+    };
+    mostMissedKeys(summary, cap).forEach(push);
+    slowestKeys(summary, cap).forEach(push);
+    return out;
+  }
+
+  /* A pool weighted toward the weak keys, for the accuracy drill.
+
+     The base pool stays in — a drill made only of z-words is a tongue-twister,
+     not practice — and matching words are repeated `weight` times so they come
+     up several times as often without ever being the only thing on screen.
+     Non-letter weak keys (punctuation, digits) have no word to hide in, so they
+     are dropped here and the UI says which keys the drill could actually use. */
+  function drillPool(basePool, extraPool, keys, weight) {
+    const letters = (keys || []).filter((k) => k.length === 1 && k >= "a" && k <= "z");
+    if (!letters.length) return basePool.slice();
+    const times = weight === undefined ? 3 : weight;
+    const hasWeak = (word) => letters.some((k) => word.indexOf(k) !== -1);
+    const matches = basePool.concat(extraPool || []).filter(hasWeak);
+    if (!matches.length) return basePool.slice();
+    let pool = basePool.slice();
+    for (let i = 0; i < times; i++) pool = pool.concat(matches);
+    return pool;
+  }
+
+  /* The QWERTY board as unit cells, so the SVG renderer is a loop rather than a
+     hand-placed drawing. x/y/w are in key units; the renderer picks the pixel
+     size. Row offsets are the real stagger of a physical board. */
+  const KEY_ROWS = [
+    { offset: 0, keys: "1234567890-=" },
+    { offset: 0.5, keys: "qwertyuiop[]" },
+    { offset: 0.75, keys: "asdfghjkl;'" },
+    { offset: 1.25, keys: "zxcvbnm,./" },
+  ];
+
+  function keyboardLayout() {
+    const cells = [];
+    KEY_ROWS.forEach((row, r) => {
+      row.keys.split("").forEach((k, i) => {
+        cells.push({ key: k, label: k, x: row.offset + i, y: r, w: 1 });
+      });
+    });
+    cells.push({ key: "space", label: "space", x: 3.5, y: 4, w: 6 });
+    return cells;
+  }
+
+  function keyboardWidth() {
+    return keyboardLayout().reduce((max, c) => Math.max(max, c.x + c.w), 0);
+  }
+
   /* ============================= DOM app ============================= */
   if (typeof document !== "undefined") {
     /* Which tool page is this? <body data-test-variant="..."> — absent means the
@@ -337,6 +541,18 @@
       customShare: document.getElementById("custom-share"),
       customStatus: document.getElementById("custom-status"),
       customCount: document.getElementById("custom-count"),
+      /* per-key report — on every tool page's results screen */
+      keysSection: document.getElementById("keys-section"),
+      keyHeatmap: document.getElementById("key-heatmap"),
+      keysNote: document.getElementById("keys-note"),
+      keysMissed: document.getElementById("keys-missed"),
+      keysSlowest: document.getElementById("keys-slowest"),
+      keysTableBody: document.getElementById("keys-table-body"),
+      drillKeysBtn: document.getElementById("drill-keys-btn"),
+      /* /accuracy-drill/ only */
+      drillBanner: document.getElementById("drill-banner"),
+      drillKeyList: document.getElementById("drill-key-list"),
+      drillClear: document.getElementById("drill-clear"),
     };
 
     /* ---------- state ---------- */
@@ -371,19 +587,27 @@
     // For a custom passage that is the passage itself (it loops); otherwise it is
     // the variant's word/token pool.
     function activePool() {
-      return VARIANT.custom && customText ? [customText] : VARIANT.pool;
+      if (VARIANT.custom && customText) return [customText];
+      /* The accuracy drill, when it has been handed a weak-key set, types the
+         same real English weighted toward those keys — see drillPool. */
+      if (VARIANT.strict && drillKeys.length) {
+        return drillPool(VARIANT.pool, RARE_WORD_POOL, drillKeys, 3);
+      }
+      return VARIANT.pool;
     }
 
     function newPassage() {
       text = VARIANT.custom && customText
         ? extendPassage(customText, [customText], targetCharsFor(duration))
-        : buildPassage(VARIANT.pool, initialWordCountFor(duration));
+        : buildPassage(activePool(), initialWordCountFor(duration));
       charStates = new Array(text.length).fill("pending");
       pos = 0;
       startTime = null;
       finished = false;
       strictErrors = 0;
       strictWrongAt = -1;
+      runKeystrokes = [];
+      lastKeyTime = null;
       setCombo(0);
       renderPassage();
       updateStatsDisplay(0, 0, duration);
@@ -493,6 +717,18 @@
         startTimer();
       }
       const isCorrect = key === text[pos];
+
+      /* One row per keystroke, against the character the passage ASKED for — see
+         recordKeystroke. Pushed into an array here and folded into the saved
+         totals once, at the end of the run; nothing is written to storage
+         mid-run. */
+      const now = Date.now();
+      runKeystrokes.push({
+        char: text[pos],
+        correct: isCorrect,
+        ms: lastKeyTime === null ? null : now - lastKeyTime,
+      });
+      lastKeyTime = now;
 
       /* Strict mode (/accuracy-drill/): the wrong key is counted as an error but
          the caret does not move, so the typist has to produce the right character
@@ -618,6 +854,9 @@
 
       const history = pushHistory({ wpm, accuracy: acc, duration, timestamp: Date.now() });
       renderHistory(history);
+
+      commitRunKeystrokes();
+      renderKeyReport();
 
       els.testScreen.hidden = true;
       els.resultsScreen.hidden = false;
@@ -869,6 +1108,292 @@
       }
     }
 
+    /* ---------- per-key report (heatmap, lists, table, drill) ----------
+       Everything here is read from and written to this browser only. There is no
+       endpoint to send it to; the page says so out loud because a per-keystroke
+       record is exactly the kind of thing a visitor is right to ask about. */
+
+    // The whole point of the store is that it crosses runs, so unlike the bests
+    // and the history it is NOT scoped per variant: your 'z' is your 'z' whether
+    // you met it in a 30-second word test or on the code page.
+    const KEYSTATS_KEY = "wpmflex-keystats";
+    const DRILL_KEYS_KEY = "wpmflex-drill-keys";
+
+    let runKeystrokes = [];
+    let lastKeyTime = null;
+    let keySummary = null;
+
+    /* The keys the accuracy drill is currently weighting toward. Recomputed from
+       live stats every time the drill page loads, so the drill follows the typist
+       as the weak keys change rather than pinning yesterday's list forever. */
+    let drillKeys = [];
+
+    function loadKeyStats() {
+      const raw = loadJSON(KEYSTATS_KEY, {});
+      return raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+    }
+
+    function commitRunKeystrokes() {
+      if (!runKeystrokes.length) return;
+      saveJSON(KEYSTATS_KEY, mergeKeystrokes(loadKeyStats(), runKeystrokes));
+      runKeystrokes = [];
+    }
+
+    function refreshDrillKeys(persist) {
+      const stored = loadJSON(DRILL_KEYS_KEY, null);
+      const storedKeys =
+        stored && Array.isArray(stored.keys) ? stored.keys.filter((k) => typeof k === "string") : [];
+      if (!storedKeys.length) {
+        drillKeys = [];
+        return drillKeys;
+      }
+      const fresh = weakKeys(summarizeKeyStats(loadKeyStats()), 6);
+      drillKeys = fresh.length ? fresh : storedKeys;
+      if (persist && fresh.length) saveJSON(DRILL_KEYS_KEY, { keys: drillKeys, savedAt: Date.now() });
+      return drillKeys;
+    }
+
+    /* ---- colour ramps ----
+       Flat colours off the cabinet palette, mixed in RGB and rounded — no
+       gradients, no blur: a keycap is a solid block with a hard edge like every
+       other surface on this screen. */
+    const HEAT_COOL = [20, 56, 74];    // #14384a — tracked, clean
+    const HEAT_HOT = [255, 107, 122];  // #ff6b7a — the CRT's error red
+    const EDGE_COOL = [29, 74, 94];    // #1d4a5e — at or under your own average
+    const EDGE_HOT = [33, 230, 255];   // #21e6ff — slower than your own average
+    const CAP_UNTRACKED = "#0a1e28";
+
+    function mixHex(a, b, t) {
+      const k = Math.max(0, Math.min(1, t));
+      const ch = (i) => Math.round(a[i] + (b[i] - a[i]) * k).toString(16).padStart(2, "0");
+      return "#" + ch(0) + ch(1) + ch(2);
+    }
+
+    // 12% of attempts wrong saturates the ramp. A typist at 94% overall accuracy
+    // is around 6% on their worst keys, so this keeps the top of the scale just
+    // out of reach rather than painting half the board solid red.
+    const ERROR_RATE_FULL = 0.12;
+
+    function renderKeyHeatmap(summary) {
+      const svg = els.keyHeatmap;
+      if (!svg) return;
+      const ns = "http://www.w3.org/2000/svg";
+      svg.textContent = "";
+
+      const U = 28;      // pixels per key unit
+      const GAP = 3;     // gutter between caps
+      const SHADOW = 3;  // hard offset shadow, no blur
+      const cells = keyboardLayout();
+      const rows = 5;
+      const w = keyboardWidth() * U + SHADOW;
+      const h = rows * U + SHADOW;
+      svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+      svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+      const byKey = {};
+      summary.rows.forEach((r) => { byKey[r.key] = r; });
+
+      cells.forEach((cell) => {
+        const row = byKey[cell.key];
+        const x = cell.x * U;
+        const y = cell.y * U;
+        const cw = cell.w * U - GAP;
+        const chh = U - GAP;
+
+        let fill = CAP_UNTRACKED;
+        let edge = "#12303d";
+        let edgeWidth = 2;
+        let label = "#33596b";
+        if (row && row.eligible) {
+          fill = mixHex(HEAT_COOL, HEAT_HOT, row.errorRate / ERROR_RATE_FULL);
+          label = "#dff6fc";
+          if (row.meanMs !== null && summary.meanMs) {
+            const t = (row.meanMs / summary.meanMs - 0.95) / 0.75;
+            edge = mixHex(EDGE_COOL, EDGE_HOT, t);
+            // Thickness carries the same signal as the colour, so the slow keys
+            // are still findable with the colours turned off.
+            if (t > 0.66) edgeWidth = 4;
+          } else {
+            edge = mixHex(EDGE_COOL, EDGE_HOT, 0);
+          }
+        }
+
+        const shadow = document.createElementNS(ns, "rect");
+        shadow.setAttribute("x", x + SHADOW);
+        shadow.setAttribute("y", y + SHADOW);
+        shadow.setAttribute("width", cw);
+        shadow.setAttribute("height", chh);
+        shadow.setAttribute("fill", "#000");
+        shadow.setAttribute("shape-rendering", "crispEdges");
+        svg.appendChild(shadow);
+
+        const cap = document.createElementNS(ns, "rect");
+        cap.setAttribute("x", x);
+        cap.setAttribute("y", y);
+        cap.setAttribute("width", cw);
+        cap.setAttribute("height", chh);
+        cap.setAttribute("fill", fill);
+        cap.setAttribute("stroke", edge);
+        cap.setAttribute("stroke-width", edgeWidth);
+        cap.setAttribute("shape-rendering", "crispEdges");
+        svg.appendChild(cap);
+
+        const text = document.createElementNS(ns, "text");
+        text.setAttribute("x", x + cw / 2);
+        text.setAttribute("y", y + chh / 2 + 3);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("fill", label);
+        text.setAttribute("font-size", cell.key === "space" ? 7 : 9);
+        text.textContent = cell.key === "space" ? "SPACE" : cell.label.toUpperCase();
+        svg.appendChild(text);
+      });
+    }
+
+    function keyLabel(key) {
+      return key === "space" ? "Space" : key.toUpperCase();
+    }
+
+    function renderKeyList(el, rows, valueFor, emptyText) {
+      if (!el) return;
+      el.textContent = "";
+      if (!rows.length) {
+        const li = document.createElement("li");
+        li.className = "keys-empty";
+        li.textContent = emptyText;
+        el.appendChild(li);
+        return;
+      }
+      rows.forEach((row) => {
+        const li = document.createElement("li");
+        const k = document.createElement("span");
+        k.className = "keys-cap";
+        k.textContent = keyLabel(row.key);
+        const v = document.createElement("span");
+        v.className = "keys-val";
+        v.textContent = valueFor(row);
+        li.appendChild(k);
+        li.appendChild(v);
+        el.appendChild(li);
+      });
+    }
+
+    function renderKeyTable(summary) {
+      const body = els.keysTableBody;
+      if (!body) return;
+      body.textContent = "";
+      const rows = summary.eligible
+        .slice()
+        .sort((a, b) => b.errorRate - a.errorRate || (b.meanMs || 0) - (a.meanMs || 0));
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 4;
+        td.textContent = "No key has been typed " + summary.gate + " times yet.";
+        tr.appendChild(td);
+        body.appendChild(tr);
+        return;
+      }
+      rows.forEach((row) => {
+        const tr = document.createElement("tr");
+        const cells = [
+          keyLabel(row.key),
+          String(row.attempts),
+          Math.round(row.errorRate * 100) + "%",
+          row.meanMs === null ? "—" : Math.round(row.meanMs) + " ms",
+        ];
+        cells.forEach((value, i) => {
+          const cell = document.createElement(i === 0 ? "th" : "td");
+          if (i === 0) cell.setAttribute("scope", "row");
+          cell.textContent = value;
+          tr.appendChild(cell);
+        });
+        body.appendChild(tr);
+      });
+    }
+
+    function renderKeyReport() {
+      if (!els.keysSection) return;
+      const summary = summarizeKeyStats(loadKeyStats());
+      keySummary = summary;
+
+      renderKeyHeatmap(summary);
+      renderKeyList(
+        els.keysMissed,
+        mostMissedKeys(summary, 5),
+        (r) => Math.round(r.errorRate * 100) + "% of " + r.attempts,
+        "Nothing yet — no key has missed often enough to name."
+      );
+      renderKeyList(
+        els.keysSlowest,
+        slowestKeys(summary, 5),
+        (r) => Math.round(r.meanMs) + " ms",
+        "Nothing yet — keep typing and the slow keys will surface."
+      );
+      renderKeyTable(summary);
+
+      if (els.keysNote) {
+        els.keysNote.textContent = summary.eligible.length
+          ? summary.eligible.length + " keys tracked · a key joins in at " + summary.gate + " attempts"
+          : "Keys join in at " + summary.gate + " attempts each — a couple more runs and the board fills in";
+      }
+
+      if (els.drillKeysBtn) {
+        const weak = weakKeys(summary, 6);
+        const letters = weak.filter((k) => k.length === 1 && k >= "a" && k <= "z");
+        els.drillKeysBtn.disabled = letters.length === 0;
+        els.drillKeysBtn.textContent = letters.length
+          ? "Drill these keys: " + letters.map((k) => k.toUpperCase()).join(" ")
+          : "Drill these keys";
+      }
+    }
+
+    function startDrillOnWeakKeys() {
+      const summary = keySummary || summarizeKeyStats(loadKeyStats());
+      const keys = weakKeys(summary, 6).filter((k) => k.length === 1 && k >= "a" && k <= "z");
+      if (!keys.length) return;
+      saveJSON(DRILL_KEYS_KEY, { keys, savedAt: Date.now() });
+      if (VARIANT.strict) {
+        // Already on the drill: swap the pool and start a fresh run rather than
+        // reloading the page out from under the visitor.
+        drillKeys = keys;
+        syncDrillBanner();
+        restart();
+      } else {
+        location.href = "/accuracy-drill/";
+      }
+    }
+
+    function syncDrillBanner() {
+      if (!els.drillBanner) return;
+      if (!drillKeys.length) {
+        els.drillBanner.hidden = true;
+        return;
+      }
+      els.drillBanner.hidden = false;
+      if (els.drillKeyList) {
+        els.drillKeyList.textContent = drillKeys
+          .filter((k) => k.length === 1 && k >= "a" && k <= "z")
+          .map((k) => k.toUpperCase())
+          .join(" ");
+      }
+    }
+
+    function initKeyReport() {
+      if (els.drillKeysBtn) els.drillKeysBtn.addEventListener("click", startDrillOnWeakKeys);
+      if (els.drillClear) {
+        els.drillClear.addEventListener("click", () => {
+          try { localStorage.removeItem(DRILL_KEYS_KEY); } catch {}
+          drillKeys = [];
+          syncDrillBanner();
+          restart();
+        });
+      }
+      if (VARIANT.strict) {
+        refreshDrillKeys(true);
+        syncDrillBanner();
+      }
+    }
+
     /* ---------- init ---------- */
     (function init() {
       let savedDuration = NaN;
@@ -883,6 +1408,7 @@
       }
       syncDurationButtons();
       initCustomPanel();
+      initKeyReport();
       newPassage();
       renderHistory(getHistory());
       focusInput();
@@ -895,6 +1421,7 @@
     module.exports = {
       WORD_POOL,
       CODE_POOL,
+      RARE_WORD_POOL,
       VARIANTS,
       MAX_CUSTOM_CHARS,
       resolveVariant,
@@ -906,6 +1433,18 @@
       findWordStart,
       findWordEnd,
       countMissedInWord,
+      MIN_KEY_SAMPLES,
+      MAX_KEY_GAP_MS,
+      keyIdentity,
+      recordKeystroke,
+      mergeKeystrokes,
+      summarizeKeyStats,
+      slowestKeys,
+      mostMissedKeys,
+      weakKeys,
+      drillPool,
+      keyboardLayout,
+      keyboardWidth,
       computeWPM,
       computeRawWPM,
       computeAccuracy,
