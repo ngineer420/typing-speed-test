@@ -399,10 +399,56 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 24px 20px 60px; }
 
 /* ---------- typing surface (passage stays READABLE monospace) ---------- */
 .type-wrap { position: relative; }
+/* The real <input> is a transparent overlay covering the whole passage, NOT a
+   1px clipped box. Two reasons, both mobile: a tap has to land on the focusable
+   element itself (a clipped, off-screen input is exactly the pattern iOS
+   intermittently refuses to raise the keyboard for, since the focus looks
+   programmatic), and 16px is the threshold below which iOS Safari zooms the
+   page on focus. It is invisible but present: opacity 0, transparent caret, and
+   the passage underneath still shows the app's own caret and colouring. */
 .type-input-hidden {
-  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  font-size: 16px;
+  opacity: 0;
+  z-index: 2;
+  cursor: text;
+  resize: none;
 }
+/* Tap-to-focus affordance. The surface has always been click-to-focus and has
+   never said so — on a phone, where there is no cursor to reveal it, an
+   unfocused test looks like a test that does not work. Shown only while the
+   input does not have focus, and never intercepting the tap it is inviting. */
+.tap-hint {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--bg-raised) 88%, transparent);
+  pointer-events: none;
+  transition: opacity .12s linear;
+}
+.tap-hint span {
+  padding: 8px 12px;
+  font-size: 13px;
+  letter-spacing: .04em;
+  text-align: center;
+  color: var(--text);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.type-wrap:focus-within .tap-hint { opacity: 0; }
 .type-surface {
   background: var(--bg-raised);
   border: 1px solid var(--border-soft);
@@ -412,7 +458,9 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 24px 20px 60px; }
   overflow: hidden;
   position: relative;
 }
-.type-surface:focus-within { border-color: var(--accent-dim); }
+/* The input is a SIBLING of the surface inside .type-wrap, so :focus-within has
+   to be read on the wrap — on the surface it could never match. */
+.type-wrap:focus-within .type-surface { border-color: var(--accent-dim); }
 /* The window is a whole number of LINE BOXES, never a fraction of one: the
    height lives on .passage (where 1em is the passage's own 21px, not the
    surface's inherited 16px) so the last visible line is never sliced. app.js
@@ -742,7 +790,20 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 24px 20px 60px; }
   box-shadow: inset 0 0 0 2px #000, inset 0 0 0 4px #14384a;
   padding: 18px 20px;
 }
-.crt .type-surface:focus-within { box-shadow: inset 0 0 0 2px #000, inset 0 0 0 4px #21e6ff; }
+.crt .type-wrap:focus-within .type-surface { box-shadow: inset 0 0 0 2px #000, inset 0 0 0 4px #21e6ff; }
+/* On the CRT the hint is a pixel-font chip, not body text. */
+.crt .tap-hint { background: rgba(2, 10, 18, .88); }
+.crt .tap-hint span {
+  color: #21e6ff;
+  font-family: "PixArc", var(--mono);
+  font-size: 9px;
+  line-height: 1.9;
+  text-shadow: 2px 2px 0 #000;
+  background: #071827;
+  border: none;
+  border-radius: 0;
+  box-shadow: 0 0 0 3px #000, inset 0 0 0 2px #14384a;
+}
 .crt .passage { color: #5f8a99; }
 .crt .char.correct { color: #eafcff; }
 .crt .char.incorrect { color: #ff6b7a; background: rgba(255, 91, 107, .18); border-radius: 0; }
@@ -1065,4 +1126,5 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 24px 20px 60px; }
   .char.current::before { animation: none; }
   .start-btn, .deck .segmented button, .crt #results-screen #try-again-btn { transition: none; }
   .custom-panel button { transition: none; }
+  .tap-hint { transition: none; }
 }

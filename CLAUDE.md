@@ -178,7 +178,7 @@ an arcade screen is lit and dark regardless of the surrounding light/dark page.
   lives in its `initTheme`, so a page without it flashes the wrong theme.
 - **Every page must link to the others.** The `#other-tests` section (built from
   the same `.faq-item` shape as `#articles`) is what keeps the tool pages out of
-  orphan status; index.html links to all five.
+  orphan status; index.html links to all six.
 - **Ads: AdSense Auto ads only.** ONE `<script>` in `<head>` (client
   `ca-pub-7560786263587509`). NEVER add `.ad-slot` divs or manual units.
 - **Zero third-party requests.** No webfonts/CDNs/beacons — the pixel font is
@@ -207,7 +207,7 @@ The header toolbar (rail + sheet) is the portfolio pattern from
 - `tools/sync_nav.py` — generic, byte-identical across the portfolio. Do not
   edit it; if it needs a change, the change belongs on every site.
 - `python3 tools/sync_nav.py` rewrites the `<!-- nav:start -->` … `<!-- nav:end -->`
-  region in all 20 HTML files. `--check` exits nonzero if any file is stale;
+  region in all 22 HTML files. `--check` exits nonzero if any file is stale;
   run it before shipping, because one hand-edited page is how these repos drift.
 
 `aria-current="page"` is derived from each file's own path, so both members of
@@ -222,9 +222,9 @@ The rail is the variant switcher. Do not turn the deck buttons into links.
 Coupled HTML+CSS/JS changes: cached visitors otherwise get new HTML with stale
 CSS = a broken raw page (this class of bug has hit sibling sites). So
 `styles.css?v=N` / `app.js?v=N` on **every** page — index, 404, privacy, terms,
-`articles/*`, `typing-weak-keys*`, and **both copies** of all five tool pages
-(20 HTML files today).
-**Bump the `?v=` on any coupled change.** Currently `?v=6`.
+`articles/*`, `typing-weak-keys*`, and **both copies** of all six tool pages
+(22 HTML files today).
+**Bump the `?v=` on any coupled change.** Currently `?v=7`.
 
 ## Shipping
 

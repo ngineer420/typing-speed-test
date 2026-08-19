@@ -7,7 +7,7 @@ renders it into the static HTML of every page.
 Tier rule (portfolio spec, ngineer420.github.io#13): a page is tier 1 only if it
 answers a *different question*, and the same tool with a parameter baked in is
 tier 2. wpmflex is the spec's named exception: this is a single-tool site where
-the variants *are* the product, so the five test pages are promoted to tier 1 and
+the variants *are* the product, so the six test pages are promoted to tier 1 and
 carry the rail. There is nothing else here for them to be peers of, and the
 in-deck 15s/30s/60s/120s controls are a parameter of whichever test is running —
 they are not pages and are deliberately not links.
@@ -15,12 +15,12 @@ they are not pages and are deliberately not links.
 Home is the brand, per the spec, so index.html takes no rail or sheet slot.
 """
 
-# Noun used in the menu trigger: "All 10 pages". Not "tools" — five of the ten
+# Noun used in the menu trigger: "All 11 pages". Not "tools" — six of the eleven
 # are one tool wearing different clothes and five are guides.
 NOUN = "pages"
 
 # Tier-1 destinations, in traffic order. The rail takes the first 8 (spec cap);
-# all nine are in the sheet, so the rail is never the only route to anything.
+# all eleven are in the sheet, so the rail is never the only route to anything.
 #   label -> rail chip text, <= 18 chars
 #   long  -> anchor text in the sheet
 #   group -> sheet grouping key, used because this site passes 8 destinations
@@ -32,6 +32,12 @@ TOOLS = [
     # chips only clear it without scrolling on desktop once this one is short.
     {"href": "/custom-text/",          "label": "Custom",      "long": "Custom Text Test",       "group": "tests",  "tier": 1},
     {"href": "/accuracy-drill/",       "label": "Accuracy",    "long": "Accuracy Drill",         "group": "tests",  "tier": 1},
+    # Sixth test, and deliberately the last one holding a rail chip: adding it
+    # pushes the rail past the cap of 8, so "History of Typing Tests" drops to
+    # sheet-only. That is the right eviction — a phone visitor who has just
+    # discovered the test works at all is the audience for another test, and
+    # the history piece is the least-trafficked of the five guides.
+    {"href": "/mobile-typing-test/",   "label": "Mobile",      "long": "Mobile Typing Test",     "group": "tests",  "tier": 1},
 
     {"href": "/articles/what-is-a-good-wpm.html",     "label": "Good WPM",    "long": "What's a Good WPM Score?", "group": "guides", "tier": 1},
     {"href": "/articles/how-to-type-faster.html",     "label": "Type Faster", "long": "How to Type Faster",       "group": "guides", "tier": 1},
@@ -40,7 +46,7 @@ TOOLS = [
     {"href": "/typing-weak-keys/",                    "label": "Weak Keys",   "long": "Find Your Weak Keys",     "group": "guides", "tier": 1},
 ]
 
-# Sheet groups, in order. Ten destinations is past the flat-list threshold, so
+# Sheet groups, in order. Eleven destinations is past the flat-list threshold, so
 # these are rendered. Names come from the visitor's vocabulary, not the repo's.
 GROUPS = [
     ("tests",  "Typing tests"),
@@ -52,7 +58,7 @@ HUBS = []
 
 # No footer tool list here today, and the spec says not to add one where none
 # exists — the rail carries the first eight tier-1 destinations visibly and the
-# sheet carries all ten, so a footer duplicate would be pure boilerplate.
+# sheet carries all eleven, so a footer duplicate would be pure boilerplate.
 FOOTER = []
 
 # One-time --migrate: this site has no nav markup at all to strip, so the only
