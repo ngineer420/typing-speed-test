@@ -19,11 +19,16 @@ driving the SAME engine in `app.js`. See "Tool pages" below.
   sanity checks: `buildPassage`, `computeWPM`, `computeRawWPM`,
   `computeAccuracy`, `getRatingTier`, `getGrade`, `sanitizeCustomText`,
   `parseDurationParam`, `formatDurationLabel`, `resolveVariant`, `VARIANTS`,
-  `WORD_POOL`, `CODE_POOL`, …), then one IIFE with the DOM app (passage engine,
-  timer, results, and the arcade HUD flavour).
+  `WORD_POOL`, `CODE_POOL`, `RARE_WORD_POOL`, `recordKeystroke`,
+  `summarizeKeyStats`, `weakKeys`, `drillPool`, `keyboardLayout`, …), then one
+  IIFE with the DOM app (passage engine, timer, results, the per-key report and
+  the arcade HUD flavour).
 - `assets/css/styles.css` — the whole design system in one file. The
   page-chrome design system up top, then the **"TYPE RUSH pixel-art cabinet"**
   block at the very bottom.
+- `typing-weak-keys/` + `typing-weak-keys.html` — the per-key heatmap
+  explainer, linked from every results screen. Same twin-file rule as the tool
+  pages, but it is an article: `container-narrow`, no cabinet, no `app.js`.
 - `assets/js/nav.js` — the portfolio toolbar's behaviour, loaded on **every**
   page. Separate from `app.js` because only the six test pages load that one,
   and the articles and legal pages need the chrome to work too. Pure
@@ -65,6 +70,14 @@ behaving exactly as it always has. Never fork the engine per page.
   `computeWPM` / `computeAccuracy` themselves stay pure and untouched.
 - **Custom passages loop.** A short passage is fed back through
   `extendPassage(text, [passage], …)` so the test never runs out of text.
+- **The accuracy drill can be weighted toward weak keys.** When
+  `wpmflex-drill-keys` is set (the "Drill these keys" button on any results
+  screen writes it), `activePool()` returns `drillPool(WORD_POOL,
+  RARE_WORD_POOL, keys, 3)` — the ordinary pool plus every matching word
+  repeated three times, so the weak letters come up several times as often
+  without the passage stopping being English. `RARE_WORD_POOL` exists because
+  `WORD_POOL` has no z-word and one q-word: without it there is nothing to
+  weight toward for exactly the keys the heatmap flags first.
 - **Storage is scoped per variant** via `VARIANTS[x].storageSuffix`: `words`
   keeps the original unsuffixed `wpmflex-best` / `wpmflex-history` /
   `wpmflex-duration` keys (existing visitors keep their scores), everything else
@@ -155,6 +168,10 @@ an arcade screen is lit and dark regardless of the surrounding light/dark page.
   `#deck-mode`, `#rush-best`, `#result-grade`, `#announce`. `/custom-text/` only:
   `#custom-text`, `#custom-apply`, `#custom-share`, `#custom-status`,
   `#custom-count` (the engine no-ops on the other pages if they are absent).
+  Per-key report, on every tool page's results screen: `#keys-section`,
+  `#key-heatmap`, `#keys-note`, `#keys-missed`, `#keys-slowest`,
+  `#keys-table-body`, `#drill-keys-btn`; `/accuracy-drill/` also has
+  `#drill-banner`, `#drill-key-list`, `#drill-clear`.
   IDs are looked up by id, not by position — the accuracy drill deliberately
   reorders the HUD and the results headline to lead with accuracy.
 - **Every page must load `app.js`** — the `data-theme` restore from localStorage
@@ -169,6 +186,11 @@ an arcade screen is lit and dark regardless of the surrounding light/dark page.
   (`wpmflex-best`, `wpmflex-history`, `wpmflex-duration`, `wpmflex-theme`), plus
   the per-variant suffixed keys above (`wpmflex-best-code`, …). A custom passage
   lives in the URL, not in storage and not on a server.
+- **Per-key stats are deliberately NOT variant-scoped.** `wpmflex-keystats` and
+  `wpmflex-drill-keys` are global: your `z` is your `z` whether you met it on
+  the word test or the code page, and the whole value of the store is that it
+  crosses runs. Nothing about it leaves the device, and the results screen says
+  so where the visitor can read it.
 - **Respect `prefers-reduced-motion`** — every animation (stripe scroll, combo
   pop, grade slam, announce, caret blink) has a reduce fallback (gated at the
   bottom of the cabinet block).
@@ -185,7 +207,7 @@ The header toolbar (rail + sheet) is the portfolio pattern from
 - `tools/sync_nav.py` — generic, byte-identical across the portfolio. Do not
   edit it; if it needs a change, the change belongs on every site.
 - `python3 tools/sync_nav.py` rewrites the `<!-- nav:start -->` … `<!-- nav:end -->`
-  region in all 18 HTML files. `--check` exits nonzero if any file is stale;
+  region in all 20 HTML files. `--check` exits nonzero if any file is stale;
   run it before shipping, because one hand-edited page is how these repos drift.
 
 `aria-current="page"` is derived from each file's own path, so both members of
@@ -200,8 +222,9 @@ The rail is the variant switcher. Do not turn the deck buttons into links.
 Coupled HTML+CSS/JS changes: cached visitors otherwise get new HTML with stale
 CSS = a broken raw page (this class of bug has hit sibling sites). So
 `styles.css?v=N` / `app.js?v=N` on **every** page — index, 404, privacy, terms,
-`articles/*`, and **both copies** of all five tool pages (18 HTML files today).
-**Bump the `?v=` on any coupled change.** Currently `?v=5`.
+`articles/*`, `typing-weak-keys*`, and **both copies** of all five tool pages
+(20 HTML files today).
+**Bump the `?v=` on any coupled change.** Currently `?v=6`.
 
 ## Shipping
 

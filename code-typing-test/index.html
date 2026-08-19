@@ -19,7 +19,7 @@
 <meta name="twitter:image" content="https://wpmflex.com/assets/og-image.png">
 
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/assets/css/styles.css?v=5">
+<link rel="stylesheet" href="/assets/css/styles.css?v=6">
 
 <script type="application/ld+json">
 {
@@ -54,9 +54,9 @@
 <!-- nav:start -->
 <nav class="toolbar" aria-label="Tools">
   <details class="tb-menu">
-    <summary class="tb-trigger" aria-label="All 9 pages">
+    <summary class="tb-trigger" aria-label="All 10 pages">
       <span class="tb-glyph" aria-hidden="true">&#9636;</span>
-      <span class="tb-label">All 9<span class="tb-label-long"> pages</span></span>
+      <span class="tb-label">All 10<span class="tb-label-long"> pages</span></span>
     </summary>
     <div class="tb-sheet">
       <div class="tb-sheet-cols">
@@ -74,6 +74,7 @@
           <li><a href="/articles/how-to-type-faster.html">How to Type Faster</a></li>
           <li><a href="/articles/history-of-typing-tests.html">History of Typing Tests</a></li>
           <li><a href="/articles/how-this-test-works.html">How This Test Works</a></li>
+          <li><a href="/typing-weak-keys/">Find Your Weak Keys</a></li>
         </ul>
       </div>
     </div>
@@ -149,6 +150,43 @@
               <button type="button" id="try-again-btn" class="primary">Try again</button>
             </div>
 
+            <div class="keys-section" id="keys-section">
+              <h3>Your keyboard <span class="keys-note" id="keys-note"></span></h3>
+              <div class="keys-layout">
+                <svg id="key-heatmap" class="key-heatmap" role="img" aria-labelledby="key-heatmap-title key-heatmap-desc" viewBox="0 0 353 143">
+                  <title id="key-heatmap-title">Per-key error heatmap</title>
+                  <desc id="key-heatmap-desc">A QWERTY layout in which each keycap is filled according to how often you type that key wrong, and outlined according to how slow it is compared with your own average. The same figures are listed in the table beside it.</desc>
+                </svg>
+                <div class="keys-table-wrap">
+                  <table class="keys-table">
+                    <caption>Text equivalent of the heatmap</caption>
+                    <thead>
+                      <tr><th scope="col">Key</th><th scope="col">Typed</th><th scope="col">Wrong</th><th scope="col">Mean</th></tr>
+                    </thead>
+                    <tbody id="keys-table-body"></tbody>
+                  </table>
+                </div>
+              </div>
+              <p class="keys-legend">
+                <span><span class="lg lg-heat" aria-hidden="true"></span>Fill: how often you miss it</span>
+                <span><span class="lg lg-edge" aria-hidden="true"></span>Outline: slower than your own average</span>
+              </p>
+              <div class="keys-lists">
+                <div class="keys-list">
+                  <h4>Your 5 most-missed keys</h4>
+                  <ol id="keys-missed"></ol>
+                </div>
+                <div class="keys-list">
+                  <h4>Your 5 slowest keys</h4>
+                  <ol id="keys-slowest"></ol>
+                </div>
+              </div>
+              <div class="keys-actions">
+                <button type="button" id="drill-keys-btn" disabled>Drill these keys</button>
+                <p class="keys-privacy">Counted across every run you take in this browser. The whole record lives in this device's local storage — there is no account, and nothing is uploaded. <a href="/typing-weak-keys/">How the heatmap works</a>.</p>
+              </div>
+            </div>
+
             <div class="history-section">
               <h3>Recent results <svg id="sparkline" hidden></svg></h3>
               <ul class="history-list" id="history-list"></ul>
@@ -219,7 +257,7 @@
 
 <div class="announce" id="announce" aria-hidden="true"></div>
 
-<script src="/assets/js/app.js?v=5"></script>
+<script src="/assets/js/app.js?v=6"></script>
 <script src="/assets/js/nav.js?v=4"></script>
 <a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
 </body>

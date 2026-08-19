@@ -636,7 +636,13 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 24px 20px 60px; }
 .crt #results-screen .results-headline .stat-label,
 .crt #results-screen .rating-badge,
 .crt #results-screen .cell .k,
-.crt #results-screen .history-section h3 {
+.crt #results-screen .history-section h3,
+.crt #results-screen .keys-section h3,
+.crt #results-screen .keys-section h4,
+.crt #results-screen .keys-table th,
+.crt #results-screen .keys-cap,
+.crt #results-screen #drill-keys-btn,
+.drill-banner {
   font-family: "PixArc", var(--mono);
   text-transform: uppercase;
   letter-spacing: 0;
@@ -895,6 +901,163 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 24px 20px 60px; }
   .hud-val { font-size: clamp(15px, 6vw, 22px); }
   .rush-strip { font-size: 7px; }
 }
+
+
+/* ---- per-key report (heatmap + lists + text equivalent) ----
+   Keycaps are flat blocks with hard offset shadows drawn straight into the SVG,
+   so the board reads as part of the cabinet rather than as a chart pasted onto
+   it. Fill = error rate, outline = mean latency against the typist's own
+   average; both mappings are spelled out in the legend and repeated verbatim in
+   the table, because colour on its own is not a report. */
+.crt #results-screen .keys-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  box-shadow: inset 0 2px 0 #14384a;
+}
+.crt #results-screen .keys-section h3 {
+  color: #6f97a6;
+  font-size: 8px;
+  margin: 0 0 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+.crt #results-screen .keys-note {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: none;
+  color: #4f7482;
+  letter-spacing: 0;
+}
+.keys-layout { display: grid; gap: 14px; align-items: start; }
+@media (min-width: 620px) {
+  /* minmax(0, …) on both tracks: the table's own widest cell must never be
+     allowed to push the board out of the panel. */
+  .keys-layout { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+}
+.key-heatmap {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+.key-heatmap text { font-family: "PixArc", var(--mono); letter-spacing: 0; }
+
+.keys-table-wrap { overflow-x: auto; max-height: 176px; overflow-y: auto; }
+.crt #results-screen .keys-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #b6d3dd;
+}
+.crt #results-screen .keys-table caption {
+  caption-side: top;
+  text-align: left;
+  color: #4f7482;
+  font-size: 10px;
+  padding-bottom: 6px;
+}
+.crt #results-screen .keys-table th,
+.crt #results-screen .keys-table td {
+  padding: 4px 6px;
+  text-align: right;
+  white-space: nowrap;
+}
+.crt #results-screen .keys-table thead th { color: #6f97a6; font-size: 6px; }
+.crt #results-screen .keys-table th[scope="row"] {
+  text-align: left;
+  color: #dff6fc;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.crt #results-screen .keys-table tbody tr { box-shadow: inset 0 -2px 0 #0d2536; }
+
+.crt #results-screen .keys-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin: 12px 0 0;
+  font-size: 11px;
+  color: #6f97a6;
+}
+.keys-legend .lg { display: inline-block; width: 26px; height: 12px; margin-right: 6px; vertical-align: -2px; }
+.keys-legend .lg-heat { background: linear-gradient(90deg, #14384a, #ff6b7a); }
+.keys-legend .lg-edge { background: #0a1e28; box-shadow: inset 0 0 0 3px #21e6ff; }
+
+.keys-lists { display: grid; gap: 12px; margin-top: 16px; }
+@media (min-width: 520px) { .keys-lists { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.crt #results-screen .keys-section h4 { color: #6f97a6; font-size: 7px; margin: 0 0 8px; }
+.crt #results-screen .keys-list ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.crt #results-screen .keys-list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  background: #030d15;
+  box-shadow: inset 0 0 0 2px #14384a;
+  padding: 6px 9px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #9fc4d0;
+}
+.crt #results-screen .keys-cap { color: #dff6fc; font-size: 10px; }
+.crt #results-screen .keys-val { color: #21e6ff; font-variant-numeric: tabular-nums; }
+.crt #results-screen .keys-empty { color: #4f7482; display: block; font-size: 11px; }
+
+.keys-actions { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 16px; }
+.crt #results-screen #drill-keys-btn {
+  font-size: 9px;
+  color: #012029;
+  background: #21e6ff;
+  border: none;
+  border-radius: 0;
+  padding: 11px 16px;
+  box-shadow: 0 5px 0 #0a6577, 0 5px 0 3px #000;
+  text-transform: uppercase;
+}
+.crt #results-screen #drill-keys-btn:hover { filter: brightness(1.06); color: #012029; }
+.crt #results-screen #drill-keys-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #0a6577, 0 0 0 3px #000; }
+.crt #results-screen #drill-keys-btn:disabled { background: #14384a; color: #4f7482; box-shadow: 0 5px 0 #071b25, 0 5px 0 3px #000; cursor: not-allowed; }
+.crt #results-screen .keys-privacy { margin: 0; font-size: 10.5px; color: #4f7482; text-align: center; max-width: 46ch; }
+/* Six named keys plus the verb is a long pixel-font label; drop a size rather
+   than let it wrap to a two-word orphan line on a phone. */
+@media (max-width: 480px) {
+  .crt #results-screen #drill-keys-btn { font-size: 8px; padding: 10px 12px; }
+}
+
+/* ---- weak-key drill banner (/accuracy-drill/ only) ---- */
+.drill-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin: 0 0 12px;
+  padding: 9px 11px;
+  background: #030d15;
+  box-shadow: inset 0 0 0 2px #000, inset 0 0 0 4px #a6ff2e;
+  color: #9fc4d0;
+  font-size: 7px;
+  text-transform: uppercase;
+  line-height: 1.7;
+}
+.drill-banner b { color: #a6ff2e; letter-spacing: .18em; }
+.drill-banner button {
+  font-family: "PixArc", var(--mono);
+  font-size: 6px;
+  text-transform: uppercase;
+  color: #9fc4d0;
+  background: #0d2536;
+  border: none;
+  border-radius: 0;
+  padding: 7px 9px;
+  box-shadow: inset 0 0 0 2px #14384a;
+  cursor: pointer;
+}
+.drill-banner button:hover { color: #dff6fc; box-shadow: inset 0 0 0 2px #21e6ff; }
 
 @media (prefers-reduced-motion: reduce) {
   .crt-screen { animation: none; }
