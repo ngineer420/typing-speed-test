@@ -232,6 +232,12 @@
     code:     { durations: [15, 30, 60, 120],      defaultDuration: 60,  pool: CODE_POOL, storageSuffix: "-code" },
     custom:   { durations: [15, 30, 60, 120],      defaultDuration: 60,  pool: WORD_POOL, storageSuffix: "-custom", custom: true },
     accuracy: { durations: [15, 30, 60, 120],      defaultDuration: 60,  pool: WORD_POOL, storageSuffix: "-accuracy", strict: true },
+    /* Same engine and same word pool as `words`; it exists for the storage
+       suffix. A thumb-typed run and a ten-finger run are not the same
+       measurement, so a phone score must not overwrite the desktop best or land
+       in the same history sparkline. 30s by default — nobody thumb-types for
+       two minutes on a page they found on a phone. */
+    mobile:   { durations: [15, 30, 60, 120],      defaultDuration: 30,  pool: WORD_POOL, storageSuffix: "-mobile" },
   };
 
   function resolveVariant(name) {
@@ -922,9 +928,31 @@
       focusInput();
     }
 
+    /* ---------- the hidden input's sentinel buffer ----------
+       The field is kept permanently NON-EMPTY. Chrome on Android does not
+       reliably emit `deleteContentBackward` when the caret already sits at the
+       start of an empty field — there is nothing there to delete — so an input
+       that is cleared after every event has a dead Backspace key. Instead it
+       holds a run of no-break spaces with the caret parked at the end: the
+       keyboard always believes there is something behind the caret, every
+       Backspace produces a real event, and the padding is re-applied after each
+       one so the buffer never drains. U+00A0 rather than a normal space because
+       it is still whitespace to the IME (nothing to autocorrect or suggest
+       against) while counting as content to delete. */
+    const PAD_CHAR = "\u00a0";
+    const PAD_LEN = 8;
+    const PAD = PAD_CHAR.repeat(PAD_LEN);
+
+    function repadInput() {
+      const el = els.typeInput;
+      if (el.value !== PAD) el.value = PAD;
+      // Caret at the end, so a soft keyboard has padding behind it to delete.
+      try { el.setSelectionRange(PAD_LEN, PAD_LEN); } catch {}
+    }
+
     function focusInput() {
-      els.typeInput.value = "";
       els.typeInput.focus();
+      repadInput();
     }
 
     /* ---------- duration selector ---------- */
@@ -991,9 +1019,109 @@
         handleChar(e.key);
       }
     });
-    // Keep the hidden input's own value irrelevant — logic runs entirely off keydown —
-    // but clear it on any 'input' event so mobile autocomplete/IME text never accumulates.
-    els.typeInput.addEventListener("input", () => { els.typeInput.value = ""; });
+    /* ---------- soft-keyboard input path (Android, and any IME) ----------
+       Android soft keyboards do not report characters on keydown. GBoard and
+       friends fire keydown with `key === "Unidentified"` / keyCode 229 and
+       deliver the actual text through beforeinput/input, so the keydown
+       listener above — which only ever acts on `e.key.length === 1` — never
+       sees a printable key and the passage never advances. On a phone the test
+       simply looks broken. This is the path that fixes it.
+
+       There is deliberately NO "already handled this frame" flag. On desktop
+       the keydown listener calls preventDefault() on the printable key, and a
+       defaulted-prevented keydown never produces the beforeinput that would
+       have followed it, so these handlers are simply not reached for ordinary
+       hardware keystrokes. A frame-scoped flag would guard nothing and would
+       introduce a race with the very fast repeats it is meant to protect. */
+
+    // True between compositionstart and compositionend. While an IME is
+    // composing, the text in the field is a draft the user has not committed —
+    // it is read once, at compositionend, and nothing is repadded underneath it.
+    let composing = false;
+
+    // Multi-character insertions are real, not theoretical: GBoard commits a
+    // whole autocorrected or predicted word in one insertText. Each character
+    // is fed through the ordinary handleChar so grading, COMBO and per-key
+    // stats behave exactly as they do for hardware keys.
+    function typeString(str) {
+      for (const ch of str) {
+        if (finished) return;
+        handleChar(ch);
+      }
+    }
+
+    function backspaceToWordStart() {
+      // handleBackspace already refuses to cross the start of the current word,
+      // so "delete the word" is just "backspace until it stops moving".
+      for (let guard = 0; guard < 200; guard++) {
+        const before = pos;
+        handleBackspace();
+        if (pos === before) return;
+      }
+    }
+
+    els.typeInput.addEventListener("compositionstart", () => { composing = true; });
+    els.typeInput.addEventListener("compositionend", (e) => {
+      composing = false;
+      // The committed string, once. Nothing was consumed while it was a draft.
+      if (typeof e.data === "string" && e.data) typeString(e.data);
+      repadInput();
+    });
+
+    els.typeInput.addEventListener("beforeinput", (e) => {
+      const type = e.inputType;
+
+      // Composition drafts are ignored until they are committed above.
+      // `insertFromComposition` is the Safari spelling of that same commit and
+      // is followed by compositionend, so acting on it would double-count.
+      if (e.isComposing || type === "insertCompositionText" || type === "insertFromComposition") return;
+
+      if (type === "insertText") {
+        e.preventDefault();
+        if (typeof e.data === "string" && e.data) typeString(e.data);
+        repadInput();
+        return;
+      }
+
+      if (type === "deleteContentBackward") {
+        e.preventDefault();
+        handleBackspace();
+        repadInput();
+        return;
+      }
+
+      if (type === "deleteWordBackward" || type === "deleteSoftLineBackward" ||
+          type === "deleteHardLineBackward") {
+        e.preventDefault();
+        backspaceToWordStart();
+        repadInput();
+        return;
+      }
+
+      /* Everything else is refused, and the two refusals worth naming are
+         deliberate:
+
+         `insertReplacementText` — GBoard rewriting a word the visitor already
+         finished (autocorrect, or tapping a suggestion). Those characters were
+         graded when they were typed and are already sitting in charStates. A
+         replacement is not a keystroke, so applying it would let autocorrect
+         retroactively fix a misspelling the visitor actually typed and inflate
+         the accuracy of a run they did not make. The run keeps the keys that
+         were pressed; the drafted word stands as typed.
+
+         `insertFromPaste` / `insertFromDrop` — a typing test that accepts
+         pasted text is not measuring typing. */
+      e.preventDefault();
+      repadInput();
+    });
+
+    // Anything that still slipped a value into the field — an unknown inputType,
+    // an autofill — is discarded and the sentinel padding restored. Never during
+    // composition: rewriting the field mid-draft cancels the IME's own state.
+    els.typeInput.addEventListener("input", (e) => {
+      if (e.isComposing || composing) return;
+      repadInput();
+    });
 
     els.typeSurface.addEventListener("click", focusInput);
     els.restartBtn.addEventListener("click", () => restart());
