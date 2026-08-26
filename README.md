@@ -29,6 +29,7 @@ privacy.html           Privacy policy (required for ad networks)
 terms.html             Terms of use
 404.html                Custom 404 page
 assets/css/styles.css  Design system
+assets/js/percentile.js  Cited population-percentile engine (ported from reflexzap)
 assets/js/app.js       App logic — word pool, passage generation, WPM/accuracy math,
                        rating tiers, and the typing engine. The pure calculation
                        functions (no DOM/localStorage) are exported via a

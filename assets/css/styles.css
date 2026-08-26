@@ -529,6 +529,8 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 24px 20px 60px; }
   color: var(--accent);
 }
 .rating-message { color: var(--text-dim); font-size: 13px; margin: 8px 0 0; }
+.population-line { color: var(--text-dim); font-size: 13px; margin: 6px 0 0; }
+.population-line a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 
 .results-grid {
   display: grid;
@@ -884,6 +886,7 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 24px 20px 60px; }
   text-shadow: 2px 2px 0 #000;
 }
 .crt #results-screen .rating-message { color: #9fc4d0; }
+.crt #results-screen .population-line { color: #9fc4d0; }
 .crt #results-screen .cell {
   background: #030d15;
   border: none;
