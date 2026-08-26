@@ -166,6 +166,47 @@
     return { tier: tier.tier, label: tier.label, message: tier.message };
   }
 
+  /* Percentiles come from assets/js/percentile.js — a model fitted to figures
+     published in the literature, every one of them cited in that file. They are
+     NOT this site's own visitor data (there is no backend to aggregate one), and
+     nothing rendered from them may imply otherwise. percentile.js is loaded ahead
+     of this script in the page; under Node it is require()d so these helpers stay
+     testable. */
+  const PERCENTILE =
+    (typeof globalThis !== "undefined" && globalThis.PercentileEngine) ||
+    (typeof require === "function" ? require("./percentile.js") : null);
+
+  /* Which published population a variant is compared against. The code test
+     has no entry: no published distribution of code-typing speed exists, and a
+     prose distribution would be the wrong population for it. */
+  const POPULATION_MODEL_BY_VARIANT = {
+    words: "TYPING_WPM",
+    minute: "TYPING_WPM",
+    long: "TYPING_WPM",
+    custom: "TYPING_WPM",
+    accuracy: "TYPING_WPM",
+    mobile: "MOBILE_TYPING_WPM",
+  };
+
+  /* The population line under the rating. Returns null when the variant has
+     no published population to compare against. `text` is the sentence,
+     `source` the citation and URL behind it. */
+  function populationNote(wpm, variantName) {
+    if (!PERCENTILE || !Number.isFinite(wpm)) return null;
+    const modelName = Object.prototype.hasOwnProperty.call(POPULATION_MODEL_BY_VARIANT, variantName)
+      ? POPULATION_MODEL_BY_VARIANT[variantName]
+      : null;
+    const model = modelName ? PERCENTILE[modelName] : null;
+    if (!model) return null;
+    const source = PERCENTILE.SOURCES.filter(function (s) { return s.id === model.source; })[0];
+    return {
+      text: PERCENTILE.comparisonText(wpm, model),
+      percentile: PERCENTILE.formatPercentile(PERCENTILE.percentileForScore(wpm, model)),
+      source: source || null,
+      n: model.n,
+    };
+  }
+
   // Arcade letter grade S/A/B/C/D from final WPM, aligned to the rating tiers
   // above (presentation only — never feeds the WPM/accuracy math).
   function getGrade(wpm) {
@@ -452,7 +493,9 @@
   if (typeof document !== "undefined") {
     /* Which tool page is this? <body data-test-variant="..."> — absent means the
        original words test, so index.html keeps behaving exactly as it did. */
-    const VARIANT = resolveVariant(document.body.getAttribute("data-test-variant") || "words");
+    const VARIANT_ATTR = document.body.getAttribute("data-test-variant") || "words";
+    const VARIANT = resolveVariant(VARIANT_ATTR);
+    const VARIANT_NAME = Object.prototype.hasOwnProperty.call(VARIANTS, VARIANT_ATTR) ? VARIANT_ATTR : "words";
     const DURATIONS = VARIANT.durations.slice();
     const PARAMS = new URLSearchParams(location.search);
     const PINNED_DURATION = parseDurationParam(PARAMS.get("d"));
@@ -530,6 +573,7 @@
       resMissed: document.getElementById("res-missed"),
       resDuration: document.getElementById("res-duration"),
       resRating: document.getElementById("res-rating"),
+      resPopulation: document.getElementById("res-population"),
       resBest: document.getElementById("res-best"),
       historyList: document.getElementById("history-list"),
       sparkline: document.getElementById("sparkline"),
@@ -823,6 +867,30 @@
       tickHandle = null;
     }
 
+    /* One sourced sentence under the rating: where this WPM sits in a published
+       typing study. The link goes to the study, never to a claim about other
+       visitors of this site. */
+    function renderPopulationLine(wpm) {
+      const el = els.resPopulation;
+      if (!el) return;
+      const note = populationNote(wpm, VARIANT_NAME);
+      el.textContent = "";
+      if (!note) {
+        el.hidden = true;
+        return;
+      }
+      el.appendChild(document.createTextNode(note.text + " "));
+      if (note.source) {
+        const a = document.createElement("a");
+        a.href = note.source.url;
+        a.rel = "noopener";
+        a.target = "_blank";
+        a.textContent = "Source: " + note.n.toLocaleString() + " typists, " + note.source.kind + ".";
+        el.appendChild(a);
+      }
+      el.hidden = false;
+    }
+
     function endTest() {
       if (finished) return;
       finished = true;
@@ -845,6 +913,7 @@
       els.resRating.textContent = rating.label;
       els.resRating.className = "rating-badge rating-" + rating.tier;
       els.resRating.nextElementSibling.textContent = rating.message;
+      renderPopulationLine(wpm);
 
       const best = saveBest(duration, wpm);
       els.resBest.textContent = best;
@@ -1547,6 +1616,8 @@
   /* ============================= exports (Node sanity checks) ============================= */
   if (typeof module !== "undefined" && module.exports) {
     module.exports = {
+      populationNote,
+      POPULATION_MODEL_BY_VARIANT,
       WORD_POOL,
       CODE_POOL,
       RARE_WORD_POOL,

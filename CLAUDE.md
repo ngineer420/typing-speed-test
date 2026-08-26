@@ -29,6 +29,18 @@ driving the SAME engine in `app.js`. See "Tool pages" below.
 - `typing-weak-keys/` + `typing-weak-keys.html` — the per-key heatmap
   explainer, linked from every results screen. Same twin-file rule as the tool
   pages, but it is an article: `container-narrow`, no cabinet, no `app.js`.
+- `assets/js/percentile.js` — the cited population-percentile engine, ported
+  from reflexzap (`reaction-time-test/assets/js/percentile.js`). The engine is
+  identical. Only `SOURCES` and the two models (`TYPING_WPM` from Dhakal et al.
+  2018, `MOBILE_TYPING_WPM` from Palin et al. 2019) belong to this site. Every
+  number in a model traces to a URL in `SOURCES`. Loaded before `app.js` on the
+  seven test pages. `app.js` reads it through `populationNote(wpm, variant)`
+  and renders `#res-population` under the rating badge. The code test has no
+  model on purpose: no published code-typing distribution exists.
+- `test/percentile.test.js` — `node --test` runs it. It checks bounds,
+  monotonicity, that each model reproduces its cited figures, that every test
+  page loads `percentile.js` before `app.js`, and that no shipped file claims
+  the percentiles come from this site's visitors.
 - `assets/js/nav.js` — the portfolio toolbar's behaviour, loaded on **every**
   page. Separate from `app.js` because only the six test pages load that one,
   and the articles and legal pages need the chrome to work too. Pure
@@ -224,7 +236,7 @@ CSS = a broken raw page (this class of bug has hit sibling sites). So
 `styles.css?v=N` / `app.js?v=N` on **every** page — index, 404, privacy, terms,
 `articles/*`, `typing-weak-keys*`, and **both copies** of all six tool pages
 (22 HTML files today).
-**Bump the `?v=` on any coupled change.** Currently `?v=7`.
+**Bump the `?v=` on any coupled change.** Currently `?v=8`.
 
 ## Shipping
 
@@ -238,6 +250,6 @@ tool page — both the directory form and the flat alias — in headless Chrome,
 `?text=` passage mid-run, the results screen) cannot be screenshotted from a cold
 load: drive them over the DevTools Protocol with `Input.dispatchKeyEvent`, or
 force `#results-screen` open with `Runtime.evaluate`. Do that **in the browser**,
-not by committing throwaway preview files. There is no test suite; `node -e`
+not by committing throwaway preview files. `node --test` runs `test/percentile.test.js`. For the rest, `node -e`
 against the `module.exports` helpers is the closest thing, and the code-token
 "no internal space" rule in particular is worth re-checking there.
