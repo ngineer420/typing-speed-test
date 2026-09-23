@@ -49,6 +49,10 @@ driving the SAME engine in `app.js`. See "Tool pages" below.
 - `assets/fonts/pressstart2p.woff2` — self-hosted pixel font (see below).
 - `privacy.html` / `terms.html` / `404.html` — required for ad networks / Pages;
   keep working.
+- `tools/build_sitemap.py` — computes `<lastmod>` for every `<loc>` in
+  `sitemap.xml` from the served file's mtime. The URL list, `<changefreq>` and
+  `<priority>` stay hand-curated. Run it LAST, after every other generator, and
+  `--check` before shipping.
 
 ## Tool pages — ONE engine, six variants
 
@@ -186,8 +190,11 @@ an arcade screen is lit and dark regardless of the surrounding light/dark page.
   `#drill-banner`, `#drill-key-list`, `#drill-clear`.
   IDs are looked up by id, not by position — the accuracy drill deliberately
   reorders the HUD and the results headline to lead with accuracy.
-- **Every page must load `app.js`** — the `data-theme` restore from localStorage
-  lives in its `initTheme`, so a page without it flashes the wrong theme.
+- **Every page carries the inline theme script FIRST in `<head>`** — one small
+  `<script>` reads `wpmflex-theme` and writes `data-theme` before the first
+  stylesheet, so no page flashes the wrong theme and the 15 pages that never
+  load `app.js` keep the visitor's choice. `app.js` still owns the toggle button
+  and the write-back; its `initTheme` read is a harmless duplicate.
 - **Every page must link to the others.** The `#other-tests` section (built from
   the same `.faq-item` shape as `#articles`) is what keeps the tool pages out of
   orphan status; index.html links to all six.
@@ -236,7 +243,7 @@ CSS = a broken raw page (this class of bug has hit sibling sites). So
 `styles.css?v=N` / `app.js?v=N` on **every** page — index, 404, privacy, terms,
 `articles/*`, `typing-weak-keys*`, and **both copies** of all six tool pages
 (22 HTML files today).
-**Bump the `?v=` on any coupled change.** Currently `?v=8`.
+**Bump the `?v=` on any coupled change.** Currently `?v=9` (`nav.js` is on `?v=5`).
 
 ## Shipping
 

@@ -507,7 +507,11 @@
     const THEME_KEY = "wpmflex-theme";
     const MIN_BUFFER_CHARS = 40; // extend passage once fewer than this many chars remain unseen
 
-    /* ---------- theme ---------- */
+    /* ---------- theme ----------
+       The first-paint write now happens in a tiny inline <head> script on every
+       page, because app.js loads after first paint and only seven of the 22
+       pages load it at all. The read below stays: it is idempotent, it keeps
+       this file correct on its own, and the toggle still belongs here. */
     (function initTheme() {
       const stored = localStorage.getItem(THEME_KEY);
       if (stored) document.documentElement.setAttribute("data-theme", stored);

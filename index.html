@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script>(function(){try{var r=document.documentElement,k="wpmflex-theme",s=localStorage.getItem(k),m=window.matchMedia("(prefers-color-scheme: dark)");r.setAttribute("data-theme",s||(m.matches?"dark":"light"));if(!s&&m.addEventListener){m.addEventListener("change",function(e){try{if(!localStorage.getItem(k))r.setAttribute("data-theme",e.matches?"dark":"light");}catch(_){}});}}catch(_){}})();</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>WPM Flex — Free Typing Speed Test</title>
@@ -21,7 +22,7 @@
 <meta name="twitter:image" content="https://wpmflex.com/assets/og-image.png">
 
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/assets/css/styles.css?v=8">
+<link rel="stylesheet" href="/assets/css/styles.css?v=9">
 
 <script type="application/ld+json">
 {
@@ -36,6 +37,46 @@
 }
 </script>
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How is WPM calculated on this test?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The test counts your correct characters, divides that total by five to get words, then divides by the length of the run in minutes. Incorrect characters do not count toward WPM. Raw WPM counts every character you typed, right or wrong, so the gap between the two numbers is what your mistakes cost you."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is a good typing speed?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The largest published study of physical-keyboard typing, Dhakal et al. (2018), measured 168,000 participants and put the average at about 52 WPM. Accuracy matters more than raw speed for real work: a steady 60 WPM at 98 percent beats an erratic 75 WPM at 90 percent."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does the timer start when the page loads?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. The timer starts on your first keystroke. Read the first few words, settle your hands, and begin when you are ready."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are my scores uploaded anywhere?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. The test runs entirely in your browser. Your best score per duration and your last 10 results are saved in your browser local storage on your own device, and nothing is sent to a server."
+      }
+    }
+  ]
+}
+</script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7560786263587509" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -224,6 +265,25 @@
     <p>When time runs out you'll get your final WPM (based on correct characters only), your raw WPM (every character you typed, right or wrong), your accuracy percentage, and a breakdown of correct, incorrect, and missed characters. Your best score per duration and your last 10 results are saved locally in your browser — nothing is ever uploaded.</p>
   </section>
 
+  <section class="container-narrow" id="faq" style="padding-top:0;">
+    <h2 style="margin-top:0;">Frequently asked questions</h2>
+    <div class="faq-item">
+      <h3>How is WPM calculated on this test?</h3>
+      <p>The test counts your correct characters, divides that total by five to get words, then divides by the length of the run in minutes. Incorrect characters do not count toward WPM. Raw WPM counts every character you typed, right or wrong, so the gap between the two numbers is what your mistakes cost you.</p>
+    </div>
+    <div class="faq-item">
+      <h3>What is a good typing speed?</h3>
+      <p>The largest published study of physical-keyboard typing, Dhakal et al. (2018), measured 168,000 participants and put the average at about 52 WPM. Accuracy matters more than raw speed for real work: a steady 60 WPM at 98 percent beats an erratic 75 WPM at 90 percent.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Does the timer start when the page loads?</h3>
+      <p>No. The timer starts on your first keystroke. Read the first few words, settle your hands, and begin when you are ready.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Are my scores uploaded anywhere?</h3>
+      <p>No. The test runs entirely in your browser. Your best score per duration and your last 10 results are saved in your browser local storage on your own device, and nothing is sent to a server.</p>
+    </div>
+  </section>
   <section class="container-narrow" id="other-tests" style="padding-top:0;">
     <h2 style="margin-top:0;">More typing tests</h2>
     <div class="faq-item">
@@ -274,6 +334,15 @@
 </main>
 
 <footer class="site-footer">
+  <div class="footer-peers">
+    <span class="footer-peers-label">More free tools</span>
+    <ul>
+      <li><a href="https://cpsboost.com" rel="noopener">Click speed test</a></li>
+      <li><a href="https://flicktrainer.com" rel="noopener">Aim training</a></li>
+      <li><a href="https://reflexzap.com" rel="noopener">Reaction time test</a></li>
+      <li><a href="https://devboxkit.com" rel="noopener">Developer tools</a></li>
+    </ul>
+  </div>
   <div class="footer-inner">
     <div>© <span id="year"></span> wpmflex.com</div>
     <div class="footer-links">
@@ -285,9 +354,9 @@
 
 <div class="announce" id="announce" aria-hidden="true"></div>
 
-<script src="/assets/js/percentile.js?v=8"></script>
-<script src="/assets/js/app.js?v=8"></script>
-<script src="/assets/js/nav.js?v=4"></script>
+<script src="/assets/js/percentile.js?v=9"></script>
+<script src="/assets/js/app.js?v=9"></script>
+<script src="/assets/js/nav.js?v=5"></script>
 <a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
 </body>
 </html>

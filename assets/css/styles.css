@@ -644,6 +644,33 @@ main { max-width: var(--maxw); margin: 0 auto; padding: 24px 20px 60px; }
 .footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
 .footer-links a { color: var(--text-dim); }
 
+/* Sister sites. Small, quiet, and above the legal row on purpose: it is a
+   courtesy row, not navigation, so it must never outrank the site's own links. */
+.footer-peers {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 24px 20px 0;
+  color: var(--text-faint);
+  font-size: 12.5px;
+}
+.footer-peers-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.footer-peers ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.footer-peers a { color: var(--text-dim); }
+.footer-peers + .footer-inner { padding-top: 14px; }
+
 /* ---------- misc ---------- */
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
