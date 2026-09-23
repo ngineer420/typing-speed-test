@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script>(function(){try{var r=document.documentElement,k="wpmflex-theme",s=localStorage.getItem(k),m=window.matchMedia("(prefers-color-scheme: dark)");r.setAttribute("data-theme",s||(m.matches?"dark":"light"));if(!s&&m.addEventListener){m.addEventListener("change",function(e){try{if(!localStorage.getItem(k))r.setAttribute("data-theme",e.matches?"dark":"light");}catch(_){}});}}catch(_){}})();</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Privacy Policy — wpmflex.com</title>
@@ -11,7 +12,27 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/assets/css/styles.css?v=8">
+<link rel="stylesheet" href="/assets/css/styles.css?v=9">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://wpmflex.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Privacy Policy",
+      "item": "https://wpmflex.com/privacy.html"
+    }
+  ]
+}
+</script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -79,12 +100,21 @@
   <p>You can opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ads Settings</a>, or generally at <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">aboutads.info</a>.</p>
 
   <h2>Analytics</h2>
-  <p>We may use privacy-respecting analytics to understand aggregate traffic (e.g. page views, approximate location by country, device type). This data is not linked to your typing results.</p>
+  <p>This site runs no analytics. wpmflex.com has no server-side application, no account system, and no analytics beacons. Nobody here counts your page views, your country, or your device type, because there is no endpoint for that data to go to.</p>
 
   <h2>Contact</h2>
   <p>Questions about this policy can be sent to the site owner via the contact link in the footer.</p>
 </main>
 <footer class="site-footer">
+  <div class="footer-peers">
+    <span class="footer-peers-label">More free tools</span>
+    <ul>
+      <li><a href="https://cpsboost.com" rel="noopener">Click speed test</a></li>
+      <li><a href="https://flicktrainer.com" rel="noopener">Aim training</a></li>
+      <li><a href="https://reflexzap.com" rel="noopener">Reaction time test</a></li>
+      <li><a href="https://devboxkit.com" rel="noopener">Developer tools</a></li>
+    </ul>
+  </div>
   <div class="footer-inner">
     <div>© <span id="year"></span> wpmflex.com</div>
     <div class="footer-links">
@@ -94,7 +124,7 @@
   </div>
 </footer>
 <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
-<script src="/assets/js/nav.js?v=4"></script>
+<script src="/assets/js/nav.js?v=5"></script>
 <a href="https://erabb.it" class="erabbit-mark" aria-label="erabb.it"><img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐇</text></svg>" width="10" height="10" alt=""></a>
 </body>
 </html>
